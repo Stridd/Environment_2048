@@ -1,22 +1,7 @@
 #include "Game_2048.h"
-
+#include <iostream>
 
 int Game_2048::currentEpisode = 0;
-
-Game_2048::Game_2048(const unsigned int& boardSize)
-{
-	this->boardSize = boardSize;
-	this->board = std::vector<std::vector<int>> 
-					  (boardSize, std::vector<int>(boardSize, 0));
-
-	currentEpisode = 0;
-	collector.emplace_back();
-
-	RNG.seed(std::random_device()());
-
-	addTile();
-	addTile();
-}
 
 Game_2048::Game_2048()
 {
@@ -26,7 +11,36 @@ Game_2048::Game_2048()
 		(boardSize, std::vector<int>(boardSize, 0));
 
 	currentEpisode = 0;
-	collector.emplace_back();
+}
+
+Game_2048::Game_2048(const unsigned int& boardSize)
+{
+	this->boardSize = boardSize;
+	this->board = std::vector<std::vector<int>> 
+					  (boardSize, std::vector<int>(boardSize, 0));
+
+	currentEpisode = 0;
+	isGameFinished = false;
+	RNG.seed(std::random_device()());
+	addTwoTiles();
+}
+
+void Game_2048::resetGame()
+{
+	resetBoard();
+	isGameFinished = false;
+	currentEpisode += 1;
+
+}
+
+void Game_2048::printBoard()
+{
+	for (int i = 0; i < boardSize; ++i)
+	{
+		for (int j = 0; j < boardSize; ++j)
+			std::cout << board[i][j] << ' ';
+		std::cout << '\n';
+	}
 }
 
 void Game_2048::resetBoard()
@@ -35,49 +49,28 @@ void Game_2048::resetBoard()
 		for (int j = 0; j < boardSize; ++j)
 			board[i][j] = 0;
 		
-	addTile();
-	addTile();
+	addTwoTiles();
 }
+
+void Game_2048::addTwoTiles()
+{
+	for (int i = 0; i < 2; ++i)
+		addRandomTile();
+}
+
 
 std::vector<std::vector<int> > Game_2048::getBoard() const
 {
 	return board;
 }
 
-void Game_2048::resetGame()
-{
-	resetBoard();
-	currentEpisode += 1;
-	collector.emplace_back();
-}
-
-void Game_2048::calculateEndGameData()
-{
-	collector[currentEpisode].calculateData(boardSize, board);
-}
-
-int Game_2048::getScore()
-{
-	return collector[currentEpisode].getGameScore();
-}
-
-std::vector<EpisodeInformation> Game_2048::getEpisodesData()
-{
-	return collector;
-}
-
-EpisodeInformation Game_2048::getCurrentEpisodeData()
-{
-	return collector[currentEpisode];
-}
-
 std::vector<int> Game_2048::getAvailableMoves(const std::vector<std::vector<int> >& board,
 											  const int& boardSize) const
 {
 	std::set<int> availableMoves;
-
-	for(int i = 0; i < boardSize; ++i)
-		for (int j = 0; j < boardSize; ++j)
+	bool stopSearching = false;
+	for(int i = 0; i < boardSize && stopSearching == false; ++i)
+		for (int j = 0; j < boardSize && stopSearching == false; ++j)
 		{
 			if (i > 0)
 				if (board[i - 1][j] == board[i][j] || board[i - 1][j] == 0)
@@ -94,81 +87,87 @@ std::vector<int> Game_2048::getAvailableMoves(const std::vector<std::vector<int>
 			if (j > 0)
 				if (board[i][j - 1] == 0 || board[i][j - 1] == board[i][j])
 					availableMoves.insert(LEFT);
+
+			if (availableMoves.size() == 4)
+				stopSearching = true;
 		}
 
 	return std::vector<int>(availableMoves.begin(), availableMoves.end());
 }
 
-bool Game_2048::isFinished() const
-{
-	return getAvailableMoves(board, boardSize).size() == 0;
-}
-
 int Game_2048::sampleAction()
 {
 	std::vector<int> availableMoves(getAvailableMoves(board, boardSize));
+	int action = -1;
 
-	std::uniform_int_distribution<int> indexesAvailable(0, availableMoves.size() - 1);
+	if (availableMoves.size() != 0)
+	{
+		std::uniform_int_distribution<int> indexesAvailable(0, availableMoves.size() - 1);
 
-	int index = indexesAvailable(RNG);
+		int index = indexesAvailable(RNG);
 
-	return availableMoves[index];
+		action = availableMoves[index];
+	}
+
+	return action;
 }
 
 void Game_2048::takeAction(const int& action)
 {
-	switch (action)
-	{
-		case UP:
-			move(-1, 0);
-			break;
-		case RIGHT:
-			move(0, +1);
-			break;
-		case DOWN:
-			move(+1, 0);
-			break;
-		case LEFT:
-			move(0, -1);
-			break;
-	}
-	collector[currentEpisode].addMove(action);
-	collector[currentEpisode].incrementGameLength();
-	addTile();
+		switch (action)
+		{
+			case UP:
+				move(-1, 0);
+				break;
+			case RIGHT:
+				move(0, +1);
+				break;
+			case DOWN:
+				move(+1, 0);
+				break;
+			case LEFT:
+				move(0, -1);
+				break;
+		}
+		addRandomTile();
 }
 
-void Game_2048::addTile()
+void Game_2048::addRandomTile()
 {
 	std::vector<std::pair<int, int> > emptyTiles;
 
-	for(int i = 0; i != boardSize; ++i)
+	emptyTiles = getEmptyPositions();
+
+	if (emptyTiles.size() != 0)
+	{
+		assignValueToRandomEmptyCell(emptyTiles);
+	}
+
+}
+
+std::vector<std::pair<int, int> > Game_2048::getEmptyPositions()
+{
+	std::vector<std::pair<int, int> > emptyTiles;
+
+	for (int i = 0; i != boardSize; ++i)
 		for (int j = 0; j != boardSize; ++j)
 			if (board[i][j] == 0)
 				emptyTiles.push_back(std::make_pair(i, j));
 
-	if (emptyTiles.size() != 0)
-	{
-		std::uniform_int_distribution<int> emptyCellDist(0, emptyTiles.size() - 1);
-
-		std::pair<int, int> position = emptyTiles[emptyCellDist(RNG)];
-
-		std::uniform_real_distribution<double> valueDistribution(0, 1.0);
-
-		double probability = valueDistribution(RNG);
-
-		board[position.first][position.second] = probability >= 0.9 ? 4 : 2;
-	}
-
+	return emptyTiles;
 }
 
-auto Game_2048::addRanges(const int& direction)
+void Game_2048::assignValueToRandomEmptyCell(std::vector<std::pair<int, int>>& emptyTiles)
 {
-	const int start = direction == 0 ? 0 : (direction == -1 ? 1 : boardSize - 1);
-	const int end = direction == 0 ? boardSize : (direction == -1 ? boardSize : -1);
-	const int stop = boardSize + end * direction;
-	const int step = direction == 0 ? -1 : direction;
+	std::uniform_int_distribution<int> emptyCellDist(0, emptyTiles.size() - 1);
 
-	return std::make_tuple(start, end, stop, step);
+	std::pair<int, int> position = emptyTiles[emptyCellDist(RNG)];
+
+	std::uniform_real_distribution<double> valueDistribution(0, 1.0);
+
+	double probability = valueDistribution(RNG);
+
+	board[position.first][position.second] = probability >= 0.9 ? 4 : 2;
 }
 
 void Game_2048::move(const int& yDirection, const int& xDirection)
@@ -178,14 +177,17 @@ void Game_2048::move(const int& yDirection, const int& xDirection)
 	int startX, endX, stopX, stepX;
 	int startY, endY, stopY, stepY;
 
-	std::tie(startX, endX, stopX, stepX) = addRanges(xDirection);
-	std::tie(startY, endY, stopY, stepY) = addRanges(yDirection);
+	std::tie(startX, endX, stopX, stepX) = getIterationElementsByDirection(xDirection);
+	std::tie(startY, endY, stopY, stepY) = getIterationElementsByDirection(yDirection);
 
 	for (int i = startY; i != endY; i += -stepY)
 		for (int j = startX; j != endX; j += -stepX)
 		{
 			int line = i;
 			int column = j;
+
+			int newYPosition = line + yDirection;
+			int newXPosition = column + xDirection;
 
 			while (line != stopY &&
 				   column != stopX &&
@@ -199,8 +201,6 @@ void Game_2048::move(const int& yDirection, const int& xDirection)
 					board[line + yDirection][column + xDirection] *= 2;
 					board[line][column] = 0;
 					cellWasCombined[line + yDirection][column + xDirection] = true;
-
-					collector[currentEpisode].incrementGameScore(board[line + yDirection][column + xDirection]);
 				}
 				else
 					if (board[line + yDirection][column + xDirection] == 0)
@@ -213,4 +213,29 @@ void Game_2048::move(const int& yDirection, const int& xDirection)
 				column += xDirection;
 			}
 		}
+}
+
+fromToStopStep Game_2048::getIterationElementsByDirection(const int& direction)
+{
+	const int start = direction == 0 ? 0 : (direction == -1 ? 1 : boardSize - 1);
+	const int end = direction == 0 ? boardSize : (direction == -1 ? boardSize : -1);
+	const int stop = boardSize + end * direction;
+	const int step = direction == 0 ? -1 : direction;
+
+	return std::make_tuple(start, end, stop, step);
+}
+
+void Game_2048::setSeed(const int& seed)
+{
+	RNG.seed(seed);
+}
+
+void Game_2048::setFinished()
+{
+	isGameFinished = true;
+}
+
+bool Game_2048::isFinished() const
+{
+	return isGameFinished;
 }
