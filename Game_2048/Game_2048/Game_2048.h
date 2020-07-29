@@ -45,11 +45,10 @@ class Game_2048
 		std::vector<std::vector<int> > getBoard() const;
 		std::vector<int> getAvailableMoves(const std::vector<std::vector<int> >& board, const int& boardSize) const;
 
-		bool isFinished() const;
-
 		void setSeed(const int& seed);
 
 		void setFinished();
+		bool isFinished() const;
 
 		int sampleAction();
 		void takeAction(const int& action);

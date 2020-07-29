@@ -7,7 +7,6 @@ using namespace std::chrono;
 int main()
 {
 	Game_2048 game{ 4 };
-	game.setSeed(0);
 	auto start = high_resolution_clock::now();
 	for (int i = 0; i < 10000; ++i)
 	{
