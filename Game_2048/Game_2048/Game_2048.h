@@ -5,6 +5,7 @@
 #include <tuple>
 
 using fromToStopStep = std::tuple<int, int, int, int>;
+using boardType = std::vector<std::vector<int> >;
 
 class Game_2048
 {
@@ -15,7 +16,7 @@ class Game_2048
 		int boardSize;
 
 		std::mt19937 RNG;
-		std::vector<std::vector<int> > board;
+		boardType board;
 
 		fromToStopStep getIterationElementsByDirection(const int&);
 
@@ -30,23 +31,16 @@ class Game_2048
 
 		bool isGameFinished;
 
-		enum Moves 
-		{
-			UP,
-			RIGHT,
-			DOWN,
-			LEFT
-		};
-
 	public:
+
 		Game_2048();
 		Game_2048(const unsigned int&);
 
-		std::vector<std::vector<int> > getBoard() const;
-		std::vector<int> getAvailableMoves(const std::vector<std::vector<int> >& board, const int& boardSize) const;
+		boardType getBoard() const;
+		std::vector<int> getAvailableMoves(const boardType& board, const int& boardSize) const;
 
 		void setSeed(const int& seed);
-
+		
 		void setFinished();
 		bool isFinished() const;
 
@@ -55,4 +49,12 @@ class Game_2048
 
 		void resetGame();
 		void printBoard();
+
+		enum Moves
+		{
+			UP,
+			RIGHT,
+			DOWN,
+			LEFT
+		};
 };

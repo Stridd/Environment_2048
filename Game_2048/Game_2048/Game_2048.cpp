@@ -7,7 +7,7 @@ Game_2048::Game_2048()
 {
 	this->boardSize = 0;
 
-	this->board = std::vector<std::vector<int>>
+	this->board = boardType
 		(boardSize, std::vector<int>(boardSize, 0));
 
 	currentEpisode = 0;
@@ -16,7 +16,7 @@ Game_2048::Game_2048()
 Game_2048::Game_2048(const unsigned int& boardSize)
 {
 	this->boardSize = boardSize;
-	this->board = std::vector<std::vector<int>> 
+	this->board = boardType
 					  (boardSize, std::vector<int>(boardSize, 0));
 
 	currentEpisode = 0;
@@ -59,12 +59,12 @@ void Game_2048::addTwoTiles()
 }
 
 
-std::vector<std::vector<int> > Game_2048::getBoard() const
+boardType Game_2048::getBoard() const
 {
 	return board;
 }
 
-std::vector<int> Game_2048::getAvailableMoves(const std::vector<std::vector<int> >& board,
+std::vector<int> Game_2048::getAvailableMoves(const boardType& board,
 											  const int& boardSize) const
 {
 	std::set<int> availableMoves;
