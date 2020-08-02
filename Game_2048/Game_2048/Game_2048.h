@@ -37,11 +37,11 @@ class Game_2048
 		Game_2048(const unsigned int&);
 
 		boardType getBoard() const;
-		std::vector<int> getAvailableMoves(const boardType& board, const int& boardSize) const;
+		static std::vector<int> getAvailableMoves(const boardType& board, const int& boardSize);
 
 		void setSeed(const int& seed);
 		
-		void setFinished();
+		void setFinishedIfNoActionIsAvailable();
 		bool isFinished() const;
 
 		int sampleAction();
@@ -49,6 +49,8 @@ class Game_2048
 
 		void resetGame();
 		void printBoard();
+
+		void setBoard(const boardType& board);
 
 		enum Moves
 		{

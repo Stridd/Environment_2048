@@ -18,7 +18,7 @@ int main()
 			int action = game.sampleAction();
 			if (action == -1)
 				// This leaves the responsibility to the one who uses it to set the game to finished
-				game.setFinished();
+				game.setFinishedIfNoActionIsAvailable();
 			else
 				game.takeAction(action);
 		}

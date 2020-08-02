@@ -43,6 +43,11 @@ void Game_2048::printBoard()
 	}
 }
 
+void Game_2048::setBoard(const boardType& board)
+{
+	this->board = board;
+}
+
 void Game_2048::resetBoard()
 {
 	for (int i = 0; i < boardSize; ++i)
@@ -65,7 +70,7 @@ boardType Game_2048::getBoard() const
 }
 
 std::vector<int> Game_2048::getAvailableMoves(const boardType& board,
-											  const int& boardSize) const
+											  const int& boardSize)
 {
 	std::set<int> availableMoves;
 	bool stopSearching = false;
@@ -230,9 +235,10 @@ void Game_2048::setSeed(const int& seed)
 	RNG.seed(seed);
 }
 
-void Game_2048::setFinished()
+void Game_2048::setFinishedIfNoActionIsAvailable()
 {
-	isGameFinished = true;
+	if(sampleAction() == -1)
+		isGameFinished = true;
 }
 
 bool Game_2048::isFinished() const
