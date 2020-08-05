@@ -25,6 +25,19 @@ Game_2048::Game_2048(const unsigned int& boardSize)
 	addTwoTiles();
 }
 
+Game_2048::Game_2048(const unsigned int& boardSize, boardType& board)
+{
+	this->boardSize = boardSize;
+	this->board = board;
+	currentEpisode = 0;
+	isGameFinished = false;
+
+	// We want to set the game as finished based on the input board
+	setFinishedIfNoActionIsAvailable();
+
+	RNG.seed(std::random_device()());
+}
+
 void Game_2048::resetGame()
 {
 	resetBoard();
@@ -41,11 +54,6 @@ void Game_2048::printBoard()
 			std::cout << board[i][j] << ' ';
 		std::cout << '\n';
 	}
-}
-
-void Game_2048::setBoard(const boardType& board)
-{
-	this->board = board;
 }
 
 void Game_2048::resetBoard()
@@ -139,20 +147,18 @@ void Game_2048::takeAction(const int& action)
 
 void Game_2048::addRandomTile()
 {
-	std::vector<std::pair<int, int> > emptyTiles;
+	emptyPositionsVector emptyTiles;
 
 	emptyTiles = getEmptyPositions();
 
 	if (emptyTiles.size() != 0)
-	{
 		assignValueToRandomEmptyCell(emptyTiles);
-	}
 
 }
 
-std::vector<std::pair<int, int> > Game_2048::getEmptyPositions()
+emptyPositionsVector Game_2048::getEmptyPositions()
 {
-	std::vector<std::pair<int, int> > emptyTiles;
+	emptyPositionsVector emptyTiles;
 
 	for (int i = 0; i != boardSize; ++i)
 		for (int j = 0; j != boardSize; ++j)
