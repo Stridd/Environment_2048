@@ -32,6 +32,7 @@ class Game_2048
 		void move(const int& , const int& );
 		void resetBoard();
 
+		bool canBeMergedAtPositions(const int&, const int&, const int&, const int&, std::vector< std::vector<bool> >&);
 		
 
 	public:

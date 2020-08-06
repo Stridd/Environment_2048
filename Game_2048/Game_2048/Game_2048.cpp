@@ -65,6 +65,17 @@ void Game_2048::resetBoard()
 	addTwoTiles();
 }
 
+bool Game_2048::canBeMergedAtPositions(const int& row, 
+									   const int& column, 
+									   const int& afterMoveRow, 
+									   const int& afterMoveColumn,
+									   std::vector< std::vector<bool> >& cellWasCombined)
+{
+	return board[row][column] == board[afterMoveRow][afterMoveColumn] &&
+		!cellWasCombined[row][column] &&
+		!cellWasCombined[afterMoveRow][afterMoveColumn];
+}
+
 void Game_2048::addTwoTiles()
 {
 	for (int i = 0; i < 2; ++i)
@@ -108,6 +119,8 @@ std::vector<int> Game_2048::getAvailableMoves(const boardType& board,
 	return std::vector<int>(availableMoves.begin(), availableMoves.end());
 }
 
+// Used for the exploration part of the agent.
+// We want to make sure the agent is able to take only the available actions
 int Game_2048::sampleAction()
 {
 	std::vector<int> availableMoves(getAvailableMoves(board, boardSize));
@@ -172,68 +185,68 @@ void Game_2048::assignValueToRandomEmptyCell(std::vector<std::pair<int, int>>& e
 {
 	std::uniform_int_distribution<int> emptyCellDist(0, emptyTiles.size() - 1);
 
-	std::pair<int, int> position = emptyTiles[emptyCellDist(RNG)];
+	std::pair<int, int> randomPosition = emptyTiles[emptyCellDist(RNG)];
 
 	std::uniform_real_distribution<double> valueDistribution(0, 1.0);
 
-	double probability = valueDistribution(RNG);
+	double cellValueProbability = valueDistribution(RNG);
 
-	board[position.first][position.second] = probability >= 0.9 ? 4 : 2;
+	board[randomPosition.first][randomPosition.second] = cellValueProbability >= 0.9 ? 4 : 2;
 }
 
 void Game_2048::move(const int& yDirection, const int& xDirection)
 {
 	std::vector< std::vector<bool> > cellWasCombined(boardSize, std::vector<bool>(boardSize, false));
 
-	int startX, endX, stopX, stepX;
-	int startY, endY, stopY, stepY;
+	int startColumn, endColumn, stopColumn, stepColumn;
+	int startRow, endRow, stopRow, stepRow;
 
-	std::tie(startX, endX, stopX, stepX) = getIterationElementsByDirection(xDirection);
-	std::tie(startY, endY, stopY, stepY) = getIterationElementsByDirection(yDirection);
+	// In order to avoid creating four functions (MoveUp, MoveDown, MoveRight, MoveLeft) 
+	// I added some function that gives the boundaries in form of start-end-stop-step
+	std::tie(startColumn, endColumn, stopColumn, stepColumn) = getIterationElementsByDirection(xDirection);
+	std::tie(startRow, endRow, stopRow, stepRow)             = getIterationElementsByDirection(yDirection);
 
-	for (int i = startY; i != endY; i += -stepY)
-		for (int j = startX; j != endX; j += -stepX)
+	for (int y = startRow; y != endRow; y += -stepRow)
+		for (int x = startColumn; x != endColumn; x += -stepColumn)
 		{
-			int line = i;
-			int column = j;
+			int row = y;
+			int column = x;
 
-			int newYPosition = line + yDirection;
-			int newXPosition = column + xDirection;
-
-			while (line != stopY &&
-				   column != stopX &&
-				   board[line][column] != 0
-				  )
+			int afterMoveRow    = row + yDirection;
+			int afterMoveColumn = column + xDirection;
+	
+			while (row != stopRow && column != stopColumn && board[row][column] != 0)
 			{
-				if (board[line][column] == board[line + yDirection][column + xDirection] &&
-					!cellWasCombined[line][column] &&
-					!cellWasCombined[line + yDirection][column + xDirection])
+				if(canBeMergedAtPositions(row,column,afterMoveRow,afterMoveColumn,cellWasCombined))
 				{
-					board[line + yDirection][column + xDirection] *= 2;
-					board[line][column] = 0;
-					cellWasCombined[line + yDirection][column + xDirection] = true;
+					board[afterMoveRow][afterMoveColumn] *= 2;
+					board[row][column] = 0;
+					cellWasCombined[afterMoveRow][afterMoveColumn] = true;
 				}
 				else
-					if (board[line + yDirection][column + xDirection] == 0)
+					if (board[afterMoveRow][afterMoveColumn] == 0)
 					{
-						board[line + yDirection][column + xDirection] = board[line][column];
-						board[line][column] = 0;
+						board[afterMoveRow][afterMoveColumn] = board[row][column];
+						board[row][column] = 0;
 					}
 
-				line += yDirection;
-				column += xDirection;
+				row          += yDirection;
+				afterMoveRow += yDirection;
+
+				column          += xDirection;
+				afterMoveColumn += xDirection;
 			}
 		}
 }
 
 fromToStopStep Game_2048::getIterationElementsByDirection(const int& direction)
 {
-	const int start = direction == 0 ? 0 : (direction == -1 ? 1 : boardSize - 1);
-	const int end = direction == 0 ? boardSize : (direction == -1 ? boardSize : -1);
-	const int stop = boardSize + end * direction;
+	const int startAt = direction == 0 ? 0 : (direction == -1 ? 1 : boardSize - 1);
+	const int endAt = direction == 0 ? boardSize : (direction == -1 ? boardSize : -1);
+	const int stopAt = boardSize + endAt * direction;
 	const int step = direction == 0 ? -1 : direction;
 
-	return std::make_tuple(start, end, stop, step);
+	return std::make_tuple(startAt, endAt, stopAt, step);
 }
 
 void Game_2048::setSeed(const int& seed)
