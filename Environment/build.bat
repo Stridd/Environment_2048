@@ -10,6 +10,6 @@ call del /f  Environment_2048.cp37-win_amd64.pyd
 call rmdir /Q /S build
 
 call echo Building project
-rem call python setup.py build_ext --inplace
+call python setup.py build_ext --inplace
 
 call echo Done building project

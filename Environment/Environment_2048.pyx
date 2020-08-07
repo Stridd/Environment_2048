@@ -25,50 +25,13 @@ cdef class Environment_2048:
 		return self.game.takeAction(x)
 		
 	def isFinished(self):
-		return self.game.isFinished()
-		
-	def calculateEndGameData(self):
-		return self.game.calculateEndGameData()
-	
-	def getScore(self):
-		return self.game.getScore()
+		return self.game.isFinished()	
 		
 	def getAvailableMoves(self, board, boardSize):
-		return self.game.getAvailableMoves(board, boardSize)
-	
-	def getEpisodesData(self):
-	
-		gameLengths = []
-		gameScores = []
-		gameEndGameSums = []
-		gameMaxCells = []
-		
-		episodesInfo = self.game.getEpisodesData()
-		
-		cdef int i
-		for i in range(episodesInfo.size()):
-			gameLengths.append(episodesInfo[i].getGameLength())
-			gameScores.append(episodesInfo[i].getGameScore())
-			gameEndGameSums.append(episodesInfo[i].getEndGameSum())
-			gameMaxCells.append(episodesInfo[i].getMaxCell())
-		
-		gameLengths = np.array(gameLengths)
-		gameScores = np.array(gameScores)
-		gameEndGameSums = np.array(gameEndGameSums)
-		gameMaxCells = np.array(gameMaxCells)
-		return gameLengths, gameScores, gameEndGameSums, gameMaxCells
-		
-	def getCurrentEpisodeData(self):
-	
-		episodeInformation = self.game.getCurrentEpisodeData()
-		
-		gameLength = episodeInformation.getGameLength()
-		gameScore = episodeInformation.getGameScore()
-		gameEndGameSum = episodeInformation.getEndGameSum()
-		gameMaxCell = episodeInformation.getMaxCell()
-		
-		return gameLength, gameScore, gameEndGameSum, gameMaxCell
-		
-	
-	
-	
+		return Game_2048.getAvailableMoves(board, boardSize)
+
+	def setSeed(self, seed):
+		self.game.setSeed(seed)
+
+	def setFinishedIfNoActionIsAvailable(self):
+		self.game.setFinishedIfNoActionIsAvailable()

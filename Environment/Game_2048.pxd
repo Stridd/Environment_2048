@@ -30,16 +30,16 @@ cdef extern from "..\Game_2048\Game_2048\Game_2048.h":
 		Game_2048(const int& x) except +
 		
 		vector[vector[int]] getBoard() const
+		@staticmethod
 		vector[int] getAvailableMoves(const vector[vector[int]]& board,
 									  const int& boardSize) const 
 		
-		int sampleAction()
-		int getScore()
+		void setFinishedIfNoActionIsAvailable();
 		bool isFinished() const
-		
-		void resetGame()
+
+		void setSeed(const int& seed);
+
+		int sampleAction()
 		void takeAction(const int& action)
-		void calculateEndGameData()
-		
-		vector[EpisodeInformation] getEpisodesData()
-		EpisodeInformation getCurrentEpisodeData()
+
+		void resetGame()
