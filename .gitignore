@@ -11,3 +11,10 @@
 *.*log*
 *.suo
 *.exe
+Environment/.vscode/
+Environment/Environment_2048.cp38-win_amd64.pyd
+Environment/Environment_2048.cpp
+Environment/build/
+Game_2048/.vs/
+Game_2048/Game_2048/x64/
+Game_2048/Tests_2048/x64/
