@@ -6,3 +6,8 @@
 *.pdb
 *.sarif
 *.ilk
+*.idb
+*.recipe
+*.*log*
+*.suo
+*.exe
