@@ -26,21 +26,8 @@
 # - Epochs
 
 from Environment_2048 import Environment_2048
-from Parameters import Parameters
-from ReplayMemory import ReplayMemory
-from DeepQNetwork import DeepQNetwork
-from DDQN_Agent import DDQN_Agent
+from Reinforce_Policy import Reinforce_Policy
 
-import numpy as np
-import random
+policy = Reinforce_Policy(256, 4)
 
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
-
-agent = Agent()
-
-agent.play_and_learn(episodes = 10000)
-
-agent.show_information()
+print('Everything compiled fine')
