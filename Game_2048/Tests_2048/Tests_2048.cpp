@@ -313,3 +313,55 @@ TEST_CASE("TakeAction-RIGHT-CellsMove-CellsMerge", "[Take Action]")
 	auto position = std::find(possibleOutcomes.begin(), possibleOutcomes.end(), game.getBoard());
 	REQUIRE(position != possibleOutcomes.end());
 }
+
+TEST_CASE("GetMergedCellsAfterMove-UP-CellsMerge","[Merged cells]")
+{
+	boardType initialBoard = { {2,4,16,8},{2,4,16,16},{2,4,16,64},{2,64,64,64} };
+	Game_2048 game{ 4, initialBoard };
+	game.takeAction(Game_2048::Moves::UP);
+
+	std::unordered_map<int, int> solution = { {2,4},{4,2},{16,2},{64,2} };
+
+	std::unordered_map<int, int> mergedCellsAfterMove = game.getMergedCellsAfterMove();
+
+	REQUIRE(solution == mergedCellsAfterMove);
+}
+
+TEST_CASE("GetMergedCellsAfterMove-DOWN-CellsMerge","[Merged cells]")
+{
+	boardType initialBoard = { {2,4,4,8},{4,4,16,8},{2,32,8,64},{32,32,64,64} };
+	Game_2048 game{ 4, initialBoard };
+	game.takeAction(Game_2048::Moves::DOWN);
+
+	std::unordered_map<int, int> solution = { {4,2}, {8,2}, {32,2}, {64,2} };
+
+	std::unordered_map<int, int> mergedCellsAfterMove = game.getMergedCellsAfterMove();
+
+	REQUIRE(solution == mergedCellsAfterMove);
+}
+
+TEST_CASE("GetMergedCellsAfterMove-LEFT-CellsMerge","[Merged cells]")
+{
+	boardType initialBoard = { {2,4,4,8},{4,4,16,16},{4,4,8,4},{32,64,64,64} };
+	Game_2048 game{ 4, initialBoard };
+	game.takeAction(Game_2048::Moves::LEFT);
+
+	std::unordered_map<int, int> solution = { {4,6},{16,2},{64,2} };
+
+	std::unordered_map<int, int> mergedCellsAfterMove = game.getMergedCellsAfterMove();
+
+	REQUIRE(solution == mergedCellsAfterMove);
+}
+
+TEST_CASE("GetMergedCellsAfterMove-RIGHT-CellsMerge","[Merged cells]")
+{
+	boardType initialBoard = { {2,4,4,8},{4,4,16,16},{2,4,8,4},{32,64,64,64} };
+	Game_2048 game{ 4, initialBoard };
+	game.takeAction(Game_2048::Moves::RIGHT);
+
+	std::unordered_map<int, int> solution = { {4,4},{16,2},{64,2} };
+
+	std::unordered_map<int, int> mergedCellsAfterMove = game.getMergedCellsAfterMove();
+
+	REQUIRE(solution == mergedCellsAfterMove);
+}

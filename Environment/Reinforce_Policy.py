@@ -41,7 +41,10 @@ class Reinforce_Policy(nn.Module):
         # Sample one of the actions
         action = distribution.sample()
 
+        # Get the log probability
         log_probability = distribution.log_probability(action)
+
+        # Store it
         self.log_probablities.append(log_probability)
 
         return action.item()

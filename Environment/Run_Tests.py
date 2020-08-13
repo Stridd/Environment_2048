@@ -25,9 +25,16 @@
 # - Batch size of transitions processed per step
 # - Epochs
 
-from Environment_2048 import Environment_2048
-from Reinforce_Policy import Reinforce_Policy
+from Reinforce_Agent import Reinforce_Agent
+from Utility import Utility
+#agent = Reinforce_Agent(256, 4, 0.99, None)
+#agent.learn(200)
 
-policy = Reinforce_Policy(256, 4)
+dictionary = {}
+dictionary[4] = 2
+dictionary[2] = 6
+
+# Expected 4 * 2 + 2 * 6
+print(Utility.get_reward_from_dictionary(dictionary))
 
 print('Everything compiled fine')

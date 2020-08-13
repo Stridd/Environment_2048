@@ -3,6 +3,7 @@
 #include <random>
 #include <set>
 #include <tuple>
+#include <unordered_map>
 
 using fromToStopStep = std::tuple<int, int, int, int>;
 using boardType = std::vector<std::vector<int> >;
@@ -21,6 +22,8 @@ class Game_2048
 
 		std::mt19937 RNG;
 		
+		std::unordered_map<int, int> mergedCellsAfterMove;
+
 		fromToStopStep getIterationElementsByDirection(const int&);
 
 		void addTwoTiles();
@@ -34,6 +37,8 @@ class Game_2048
 
 		bool canBeMergedAtPositions(const int&, const int&, const int&, const int&, std::vector< std::vector<bool> >&);
 		
+		void storeMergedCellsInformation(int& value);
+		void emptyMergedCellsInformation();
 
 	public:
 
@@ -43,6 +48,8 @@ class Game_2048
 
 		boardType getBoard() const;
 		static std::vector<int> getAvailableMoves(const boardType& board, const int& boardSize);
+
+		std::unordered_map<int, int> getMergedCellsAfterMove();
 
 		void setSeed(const int& seed);
 		

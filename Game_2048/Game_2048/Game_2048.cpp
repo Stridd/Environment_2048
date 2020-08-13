@@ -76,6 +76,7 @@ bool Game_2048::canBeMergedAtPositions(const int& row,
 		!cellWasCombined[afterMoveRow][afterMoveColumn];
 }
 
+
 void Game_2048::addTwoTiles()
 {
 	for (int i = 0; i < 2; ++i)
@@ -140,6 +141,7 @@ int Game_2048::sampleAction()
 
 void Game_2048::takeAction(const int& action)
 {
+		emptyMergedCellsInformation();
 		switch (action)
 		{
 			case UP:
@@ -181,7 +183,7 @@ emptyPositionsVector Game_2048::getEmptyPositions()
 	return emptyTiles;
 }
 
-void Game_2048::assignValueToRandomEmptyCell(std::vector<std::pair<int, int>>& emptyTiles)
+void Game_2048::assignValueToRandomEmptyCell(emptyPositionsVector& emptyTiles)
 {
 	std::uniform_int_distribution<int> emptyCellDist(0, emptyTiles.size() - 1);
 
@@ -219,9 +221,13 @@ void Game_2048::move(const int& yDirection, const int& xDirection)
 			{
 				if(canBeMergedAtPositions(row,column,afterMoveRow,afterMoveColumn,cellWasCombined))
 				{
+					storeMergedCellsInformation(board[afterMoveRow][afterMoveColumn]);
+
 					board[afterMoveRow][afterMoveColumn] *= 2;
 					board[row][column] = 0;
+
 					cellWasCombined[afterMoveRow][afterMoveColumn] = true;
+					
 				}
 				else
 					if (board[afterMoveRow][afterMoveColumn] == 0)
@@ -238,6 +244,17 @@ void Game_2048::move(const int& yDirection, const int& xDirection)
 			}
 		}
 }
+
+void Game_2048::storeMergedCellsInformation(int& value)
+{
+	if (mergedCellsAfterMove.find(value) != mergedCellsAfterMove.end())
+	{
+		mergedCellsAfterMove[value] += 2;
+	}
+	else
+		mergedCellsAfterMove[value] = 2;
+}
+
 
 fromToStopStep Game_2048::getIterationElementsByDirection(const int& direction)
 {
@@ -263,4 +280,14 @@ void Game_2048::setFinishedIfNoActionIsAvailable()
 bool Game_2048::isFinished() const
 {
 	return isGameFinished;
+}
+
+std::unordered_map<int, int> Game_2048::getMergedCellsAfterMove()
+{
+	return mergedCellsAfterMove;
+}
+
+void Game_2048::emptyMergedCellsInformation()
+{
+	mergedCellsAfterMove.clear();
 }

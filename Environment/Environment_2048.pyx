@@ -2,8 +2,6 @@
 
 from Game_2048 cimport Game_2048
 
-from libcpp.vector cimport vector
-
 import numpy as np
 
 cdef class Environment_2048:
@@ -35,3 +33,6 @@ cdef class Environment_2048:
 
 	def setFinishedIfNoActionIsAvailable(self):
 		self.game.setFinishedIfNoActionIsAvailable()
+
+	def getMergedCellsAfterMove(self):
+		return self.game.getMergedCellsAfterMove()
