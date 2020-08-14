@@ -26,15 +26,8 @@
 # - Epochs
 
 from Reinforce_Agent import Reinforce_Agent
-from Utility import Utility
-#agent = Reinforce_Agent(256, 4, 0.99, None)
-#agent.learn(200)
 
-dictionary = {}
-dictionary[4] = 2
-dictionary[2] = 6
-
-# Expected 4 * 2 + 2 * 6
-print(Utility.get_reward_from_dictionary(dictionary))
-
+agent = Reinforce_Agent(16,4,0.99)
+agent.learn(episodes = 2500)
+agent.print_statistics()
 print('Everything compiled fine')

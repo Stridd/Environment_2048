@@ -8,3 +8,15 @@ class Utility(ABC):
             reward += cell * times_merged
 
         return reward 
+
+    @staticmethod
+    def pretty_print_game_board(board):
+        for i in range(len(board)):
+            for j in range(len(board)):
+                print(board[i][j], end = ' ')
+            print('\n', end = '')
+
+    @staticmethod
+    def write_to_file(item):
+        with open('Log.txt','w+') as f:
+            f.write(item)

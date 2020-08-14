@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 from torch.distributions import Categorical
+
 
 class Reinforce_Policy(nn.Module):
     def __init__(self, input_size, output_size):
@@ -19,10 +21,10 @@ class Reinforce_Policy(nn.Module):
 
     def forward(self, x):
 
-        copy_x = x.copy()
+        copy_x = x.clone()
 
         output_1     = self.layer_1(copy_x)
-        activation_1 = nn.ReLU(output_1)
+        activation_1 = F.relu(output_1)
 
         output_2     = self.layer_2(activation_1)
 
@@ -42,7 +44,7 @@ class Reinforce_Policy(nn.Module):
         action = distribution.sample()
 
         # Get the log probability
-        log_probability = distribution.log_probability(action)
+        log_probability = distribution.log_prob(action)
 
         # Store it
         self.log_probablities.append(log_probability)
