@@ -1,19 +1,37 @@
 from Reinforce_Policy import Reinforce_Policy
 from Environment_2048 import Environment_2048
+
+from History import History
+from Logger  import Logger 
 from Utility import Utility
+
 import torch.optim as optim
 import numpy as np
 import torch
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+import os 
 
 class Reinforce_Agent():
     def __init__(self, input_size, output_size, gamma):
         self.policy = Reinforce_Policy(input_size, output_size)
-        self.gamma  = gamma
-        self.optimizer = optim.Adam(self.policy.parameters(), lr=0.01)
         self.game =  Environment_2048(4)
-        self.penalty = -100
-        self.episode_rewards = []
+
+        self.agent_history = History()
+
+        self.gamma  = gamma
+
+        self.optimizer = optim.Adam(self.policy.parameters(), lr=0.001)
+
+        self.penalty = -1
+        
+        self.setup_logger()
+
+
+    def setup_logger(self):
+        current_directory = os.path.dirname(__file__)
+
+        self.logger = Logger(current_directory,'episode_info.txt','general_info.txt')
+
 
     def train(self):
         episode_length = len(self.policy.rewards)
@@ -39,10 +57,11 @@ class Reinforce_Agent():
         return loss
 
     def learn(self, episodes):
-        max_steps = 1000
+
+        max_steps = 10000
 
         for episode in range(episodes):
-
+            print('Processing episode {}'.format(episode))
             game_is_done = False
 
             steps = 0
@@ -58,7 +77,7 @@ class Reinforce_Agent():
                 available_actions = self.game.getAvailableMoves(game_board, len(game_board))
                 reward = 0
 
-                if action == -1:
+                if len(available_actions) == 0:
                     self.game.setFinishedIfNoActionIsAvailable()
                 elif action in available_actions:
                     self.game.takeAction(action)
@@ -73,11 +92,14 @@ class Reinforce_Agent():
                 steps += 1
 
             loss = self.train()
-            total_reward = sum(self.policy.rewards)
-            self.episode_rewards.append(total_reward)
-            self.policy.reset_policy()
-            print('| Episode: {} | Loss: {} | Total reward: {} |'.format(episode, loss, total_reward))
 
-    def print_statistics(self):
-        plt.plot([i for i in range(len(self.episode_rewards))], self.episode_rewards)
-        plt.show()
+            total_rewards = np.sum(self.policy.rewards)
+
+            self.agent_history.add_episode_reward(total_rewards)
+            self.agent_history.add_episode_length(steps)
+            self.agent_history.add_loss(loss.item())
+
+            self.policy.reset_policy()
+
+    def write_game_info(self):
+        self.logger.write_information(self.agent_history)

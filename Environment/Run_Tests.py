@@ -27,7 +27,7 @@
 
 from Reinforce_Agent import Reinforce_Agent
 
-agent = Reinforce_Agent(16,4,0.99)
-agent.learn(episodes = 2500)
-agent.print_statistics()
-print('Everything compiled fine')
+agent = Reinforce_Agent(16,4,0.9)
+agent.learn(episodes = 100)
+agent.write_game_info()
+print('Done')

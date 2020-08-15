@@ -15,8 +15,3 @@ class Utility(ABC):
             for j in range(len(board)):
                 print(board[i][j], end = ' ')
             print('\n', end = '')
-
-    @staticmethod
-    def write_to_file(item):
-        with open('Log.txt','w+') as f:
-            f.write(item)
