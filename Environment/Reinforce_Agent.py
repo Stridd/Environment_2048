@@ -13,7 +13,10 @@ import os
 
 class Reinforce_Agent():
     def __init__(self, input_size, output_size, gamma):
-        self.policy = Reinforce_Policy(input_size, output_size)
+        self.setup_logger()
+
+        self.policy = Reinforce_Policy(input_size, output_size, self.logger)
+
         self.game =  Environment_2048(4)
 
         self.agent_history = History()
@@ -24,7 +27,7 @@ class Reinforce_Agent():
 
         self.penalty = -1
         
-        self.setup_logger()
+
 
 
     def setup_logger(self):
@@ -64,6 +67,9 @@ class Reinforce_Agent():
             print('Processing episode {}'.format(episode))
             game_is_done = False
 
+            min_reward = None
+            max_reward = None
+
             steps = 0
 
             self.game.resetGame()
@@ -78,12 +84,17 @@ class Reinforce_Agent():
                 reward = 0
 
                 if len(available_actions) == 0:
+
                     self.game.setFinishedIfNoActionIsAvailable()
                 elif action in available_actions:
+
                     self.game.takeAction(action)
                     reward = Utility.get_reward_from_dictionary(self.game.getMergedCellsAfterMove())
                 else:
                     reward = self.penalty
+
+                min_reward = reward if min_reward is None else min(reward, min_reward)
+                max_reward = reward if max_reward is None else max(reward, max_reward) 
 
                 self.policy.rewards.append(reward)
 
@@ -95,11 +106,17 @@ class Reinforce_Agent():
 
             total_rewards = np.sum(self.policy.rewards)
 
+            max_cell, max_cell_count = Utility.get_max_cell_value_and_count_from_board(self.game.getBoard())
+
             self.agent_history.add_episode_reward(total_rewards)
             self.agent_history.add_episode_length(steps)
             self.agent_history.add_loss(loss.item())
+            self.agent_history.add_min_reward(min_reward)
+            self.agent_history.add_max_reward(max_reward)
+            self.agent_history.add_max_cell(max_cell)
+            self.agent_history.add_max_cell_count(max_cell_count)
 
             self.policy.reset_policy()
 
     def write_game_info(self):
-        self.logger.write_information(self.agent_history)
+        self.logger.write_statistics(self.agent_history)

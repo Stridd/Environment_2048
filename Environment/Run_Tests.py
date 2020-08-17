@@ -26,8 +26,9 @@
 # - Epochs
 
 from Reinforce_Agent import Reinforce_Agent
+from Parameters import Parameters
 
-agent = Reinforce_Agent(16,4,0.9)
-agent.learn(episodes = 100)
+agent = Reinforce_Agent(Parameters.input_size, Parameters.output_size, Parameters.gamma)
+agent.learn(episodes = Parameters.episodes)
 agent.write_game_info()
 print('Done')

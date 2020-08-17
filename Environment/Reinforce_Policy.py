@@ -6,7 +6,7 @@ from torch.distributions import Categorical
 
 
 class Reinforce_Policy(nn.Module):
-    def __init__(self, input_size, output_size):
+    def __init__(self, input_size, output_size, logger):
         super(Reinforce_Policy, self).__init__()
 
         self.layer_1 = nn.Linear(input_size, 128)
@@ -14,6 +14,7 @@ class Reinforce_Policy(nn.Module):
 
         self.reset_policy()
         self.train()
+        self.logger = logger
 
     def reset_policy(self):
         self.log_probablities = []
@@ -50,5 +51,3 @@ class Reinforce_Policy(nn.Module):
         self.log_probablities.append(log_probability)
 
         return action.item()
-
-
