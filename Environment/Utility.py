@@ -1,5 +1,6 @@
 from Parameters import Parameters
 from abc import ABC
+import numpy as np 
 
 class Utility(ABC):
 
@@ -13,8 +14,8 @@ class Utility(ABC):
 
     @staticmethod
     def pretty_print_game_board(board):
-        for i in range(len(Parameters.board_size)):
-            for j in range(len(Parameters.board_size)):
+        for i in range(Parameters.board_size):
+            for j in range(Parameters.board_size):
                 print(board[i][j], end = ' ')
             print('\n', end = '')
 
@@ -22,8 +23,8 @@ class Utility(ABC):
     def get_max_cell_value_and_count_from_board(board):
         max_cell = None
         max_cell_count = 0
-        for i in range(len(Parameters.board_size)):
-            for j in range(len(Parameters.board_size)):
+        for i in range(Parameters.board_size):
+            for j in range(Parameters.board_size):
                 if max_cell is None or max_cell < board[i][j]: 
                     max_cell = board[i][j]
                     max_cell_count = 1
@@ -31,3 +32,22 @@ class Utility(ABC):
                     max_cell_count +=1
 
         return max_cell, max_cell_count
+
+    @staticmethod
+    def process_state_using_log2_and_factor(state, factor):
+        work_state = np.array(state.copy(), dtype = np.float32)
+        # Set 0 values to 1 to avoid -inf when doing log2
+        work_state[work_state == 0] = 1
+
+        work_state = np.log2(work_state)
+        work_state /= factor
+        return work_state
+
+    @staticmethod
+    def standardize_state(state):
+        work_state = np.array(state.copy(), dtype = np.float32)
+        mean = np.mean(work_state)
+        variance = np.var(work_state)
+        work_state -= mean
+        work_state /= variance
+        return work_state

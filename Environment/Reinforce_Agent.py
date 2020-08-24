@@ -23,17 +23,14 @@ class Reinforce_Agent():
 
         self.gamma  = gamma
 
-        self.optimizer = optim.Adam(self.policy.parameters(), lr=0.001)
+        self.optimizer = optim.Adam(self.policy.parameters(), lr=Parameters.lr)
 
         self.penalty = -1
         
-
-
-
     def setup_logger(self):
         current_directory = os.path.dirname(__file__)
 
-        self.logger = Logger(current_directory,'episode_info.txt','general_info.txt')
+        self.logger = Logger(current_directory)
 
 
     def train(self):
@@ -65,6 +62,7 @@ class Reinforce_Agent():
 
         for episode in range(episodes):
             print('Processing episode {}'.format(episode))
+
             game_is_done = False
 
             min_reward = None

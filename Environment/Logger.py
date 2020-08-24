@@ -1,8 +1,8 @@
 import os 
-import Parameters
+from Parameters import Parameters
 
 class Logger():
-    def __init__(self):
+    def __init__(self, logs_path):
         
         logs_folder_name = Parameters.logs_folder_name
         logs_folder_path = logs_path + '\\' + logs_folder_name
@@ -13,7 +13,7 @@ class Logger():
         path_to_folder = logs_folder_path + '\\'
 
         episode_info_path = path_to_folder + Parameters.episode_data_file_name
-        general_info_path = path_to_folder + Parameters.general_info_file_name
+        general_info_path = path_to_folder + Parameters.general_data_file_name
 
         self.episode_info_file = open(episode_info_path, 'w+')
         self.general_info_file = open(general_info_path, 'w+')
