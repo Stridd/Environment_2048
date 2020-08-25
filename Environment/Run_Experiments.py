@@ -27,8 +27,9 @@
 
 from Reinforce_Agent import Reinforce_Agent
 from Parameters import Parameters
+import numpy as np
 
-agent = Reinforce_Agent(Parameters.input_size, Parameters.output_size, Parameters.gamma)
-agent.learn(episodes = Parameters.episodes)
+agent = Reinforce_Agent()
+agent.learn(episodes = 2)
 agent.write_game_info()
 print('Done')

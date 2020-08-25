@@ -23,18 +23,30 @@ class Logger():
         self.general_info_file.write('\n')
 
     def write_statistics(self, agent_history):
-        losses          = agent_history.get_losses()
-        rewards         = agent_history.get_episode_rewards()
-        episode_lengths = agent_history.get_episode_lengths()
-        min_rewards     = agent_history.get_min_rewards()
-        max_rewards     = agent_history.get_max_rewards()
-        max_cells       = agent_history.get_max_cells()
-        max_cells_count = agent_history.get_max_cells_count()
+        losses          = agent_history.losses
+        rewards         = agent_history.episode_rewards
+        episode_lengths = agent_history.episode_lengths
+        min_rewards     = agent_history.min_rewards
+        max_rewards     = agent_history.max_rewards
+        max_cells       = agent_history.max_cell
+        max_cells_count = agent_history.max_cell_count
 
         for i in range(len(losses)):
-           self.episode_info_file.write('| Episode %5s | Lengths: %-5s | Loss: %-5.2f |Min Reward: %-5s|Max Reward: %-5s|Total Reward: %-5s|Max cell: %-5s|Max Cell Count: %-3s| ' \
+           self.episode_info_file.write('| Episode %5s | Length: %-10s | Loss: %-5.2f |Min Reward: %-10s|Max Reward: %-10s|Total Reward: %-10s|Max cell: %-10s|Max Cell Count: %-3s| ' \
                                          % (i, episode_lengths[i], losses[i], min_rewards[i], max_rewards[i], rewards[i], max_cells[i], max_cells_count[i]))
            self.episode_info_file.write('\n')
+
+        reward_evolution_per_episode = agent_history.rewards_on_action_per_episode
+        action_per_episode           = agent_history.actions_taken_per_episode
+        state_evolution_per_episode  = agent_history.state_evolution_per_episode
+
+        for i in range(len(reward_evolution_per_episode)):
+
+            for j in range(len(reward_evolution_per_episode[i])):
+                
+                self.general_info_file.write('| Action: %-10s | Reward: %-10s |' % (action_per_episode[i][j], reward_evolution_per_episode[i][j]))
+                self.general_info_file.write('\n')
+            self.general_info_file.write('*' * 100)
 
     def __del__(self):
         print('Closing files')

@@ -4,6 +4,7 @@ from Environment_2048 import Environment_2048
 from History import History
 from Logger  import Logger 
 from Utility import Utility
+from Parameters import Parameters
 
 import torch.optim as optim
 import numpy as np
@@ -12,20 +13,20 @@ import matplotlib.pyplot as plt
 import os 
 
 class Reinforce_Agent():
-    def __init__(self, input_size, output_size, gamma):
+    def __init__(self):
         self.setup_logger()
 
-        self.policy = Reinforce_Policy(input_size, output_size, self.logger)
+        self.policy = Reinforce_Policy(Parameters.input_size, Parameters.output_size, self.logger)
 
         self.game =  Environment_2048(4)
 
         self.agent_history = History()
 
-        self.gamma  = gamma
+        self.gamma  = Parameters.gamma
 
         self.optimizer = optim.Adam(self.policy.parameters(), lr=Parameters.lr)
 
-        self.penalty = -1
+        self.penalty = Parameters.penalty
         
     def setup_logger(self):
         current_directory = os.path.dirname(__file__)
@@ -58,7 +59,6 @@ class Reinforce_Agent():
 
     def learn(self, episodes):
 
-        max_steps = 10000
 
         for episode in range(episodes):
             print('Processing episode {}'.format(episode))
@@ -72,13 +72,15 @@ class Reinforce_Agent():
 
             self.game.resetGame()
 
-            while not game_is_done and steps < max_steps:
+            while not game_is_done and steps < Parameters.max_episode_duration:
                 
                 game_board = self.game.getBoard()
                 state = np.array(game_board).reshape(1, -1)
 
                 action = self.policy.act(state)
+
                 available_actions = self.game.getAvailableMoves(game_board, len(game_board))
+
                 reward = 0
 
                 if len(available_actions) == 0:
@@ -96,6 +98,15 @@ class Reinforce_Agent():
 
                 self.policy.rewards.append(reward)
 
+                if episode in self.agent_history.state_evolution_per_episode.keys():
+                    self.agent_history.state_evolution_per_episode[episode].append(game_board)
+                    self.agent_history.actions_taken_per_episode[episode].append(action)
+                    self.agent_history.rewards_on_action_per_episode[episode].append(reward)
+                else:
+                    self.agent_history.state_evolution_per_episode[episode]     = [game_board]
+                    self.agent_history.actions_taken_per_episode[episode]       = [action]
+                    self.agent_history.rewards_on_action_per_episode[episode]   = [reward]
+
                 game_is_done = self.game.isFinished()
 
                 steps += 1
@@ -106,13 +117,13 @@ class Reinforce_Agent():
 
             max_cell, max_cell_count = Utility.get_max_cell_value_and_count_from_board(self.game.getBoard())
 
-            self.agent_history.add_episode_reward(total_rewards)
-            self.agent_history.add_episode_length(steps)
-            self.agent_history.add_loss(loss.item())
-            self.agent_history.add_min_reward(min_reward)
-            self.agent_history.add_max_reward(max_reward)
-            self.agent_history.add_max_cell(max_cell)
-            self.agent_history.add_max_cell_count(max_cell_count)
+            self.agent_history.episode_rewards.append(total_rewards)
+            self.agent_history.episode_lengths.append(steps)
+            self.agent_history.losses.append(loss.item())
+            self.agent_history.min_rewards.append(min_reward)
+            self.agent_history.max_rewards.append(max_reward)
+            self.agent_history.max_cell.append(max_cell)
+            self.agent_history.max_cell_count.append(max_cell_count)
 
             self.policy.reset_policy()
 
