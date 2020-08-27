@@ -3,12 +3,12 @@ class Parameters:
     
     lr = 0.001
 
-    episodes = 10
+    episodes = 100
     board_size = 4
     
-    penalty = -10000
+    penalty = -2
 
-    max_episode_duration = 10000
+    max_episode_duration = 1000
 
     input_size = 16
     output_size = 4

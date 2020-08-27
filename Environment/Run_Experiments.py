@@ -30,8 +30,9 @@ from Parameters import Parameters
 import numpy as np
 
 agent = Reinforce_Agent()
-agent.learn(episodes = 100000)
+agent.learn()
 agent.write_game_info()
-
+agent.plot_rewards()
+agent.plot_episode_lengths()
 
 print('Done')

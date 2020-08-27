@@ -5,6 +5,7 @@ from History import History
 from Logger  import Logger 
 from Utility import Utility
 from Parameters import Parameters
+from Plotter import Plotter
 
 import torch.optim as optim
 import numpy as np
@@ -59,10 +60,10 @@ class Reinforce_Agent():
 
         return loss
 
-    def learn(self, episodes):
+    def learn(self):
 
 
-        for episode in range(episodes):
+        for episode in range(Parameters.episodes):
             print('Processing episode {}'.format(episode))
 
             game_is_done = False
@@ -95,16 +96,14 @@ class Reinforce_Agent():
                 else:
                     reward = self.penalty
 
+                # Check if game ended prematurely
+
                 min_reward = reward if min_reward is None else min(reward, min_reward)
                 max_reward = reward if max_reward is None else max(reward, max_reward) 
 
                 self.policy.rewards.append(reward)
 
                 self.history.store_state_action_reward_for_current_episode([game_board, action, reward])
-
-                # If receives a penalty, reset the game
-                if reward == self.penalty:
-                    break
 
                 game_is_done = self.game.isFinished()
 
@@ -136,3 +135,9 @@ class Reinforce_Agent():
         max_reward = max(self.history.episode_rewards)
 
         print('MAX CELL: {} | MAX LENGTH: {} | MAX REWARD: {} | '.format(max_cell, max_length, max_reward))
+
+    def plot_rewards(self):
+        Plotter.plot_moving_average_of_reward_using_history(self.history, 10)
+
+    def plot_episode_lengths(self):
+        Plotter.plot_moving_average_of_episode_lengths_using_history(self.history, 10)
