@@ -6,9 +6,9 @@ class Parameters:
     episodes = 10
     board_size = 4
     
-    penalty = -2
+    penalty = -10000
 
-    max_episode_duration = 50000
+    max_episode_duration = 10000
 
     input_size = 16
     output_size = 4

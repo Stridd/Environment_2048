@@ -23,6 +23,7 @@ class Logger():
         self.general_info_file.write('\n')
 
     def write_statistics(self, agent_history):
+
         losses          = agent_history.losses
         rewards         = agent_history.episode_rewards
         episode_lengths = agent_history.episode_lengths
@@ -39,14 +40,18 @@ class Logger():
         reward_evolution_per_episode = agent_history.rewards_on_action_per_episode
         action_per_episode           = agent_history.actions_taken_per_episode
         state_evolution_per_episode  = agent_history.state_evolution_per_episode
+        network_output               = agent_history.network_output
+        entropy                      = agent_history.entropy_per_episode
 
         for i in range(len(reward_evolution_per_episode)):
-
             for j in range(len(reward_evolution_per_episode[i])):
                 
-                self.general_info_file.write('| Action: %-10s | Reward: %-10s |' % (action_per_episode[i][j], reward_evolution_per_episode[i][j]))
+                self.general_info_file.write('| Output: %50s | Entropy: %10.4f | Action: %-10s | Reward: %-10s |'  \
+                                            % (network_output[i][j], entropy[i][j], action_per_episode[i][j], reward_evolution_per_episode[i][j]))
                 self.general_info_file.write('\n')
+
             self.general_info_file.write('*' * 100)
+            self.general_info_file.write('\n')
 
     def __del__(self):
         print('Closing files')

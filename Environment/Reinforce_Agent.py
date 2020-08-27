@@ -16,17 +16,18 @@ class Reinforce_Agent():
     def __init__(self):
         self.setup_logger()
 
-        self.policy = Reinforce_Policy(Parameters.input_size, Parameters.output_size, self.logger)
+        self.history = History()
+
+        self.policy = Reinforce_Policy(Parameters.input_size, Parameters.output_size, self.history)
 
         self.game =  Environment_2048(4)
-
-        self.agent_history = History()
 
         self.gamma  = Parameters.gamma
 
         self.optimizer = optim.Adam(self.policy.parameters(), lr=Parameters.lr)
 
         self.penalty = Parameters.penalty
+
         
     def setup_logger(self):
         current_directory = os.path.dirname(__file__)
@@ -55,6 +56,7 @@ class Reinforce_Agent():
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+
         return loss
 
     def learn(self, episodes):
@@ -98,14 +100,11 @@ class Reinforce_Agent():
 
                 self.policy.rewards.append(reward)
 
-                if episode in self.agent_history.state_evolution_per_episode.keys():
-                    self.agent_history.state_evolution_per_episode[episode].append(game_board)
-                    self.agent_history.actions_taken_per_episode[episode].append(action)
-                    self.agent_history.rewards_on_action_per_episode[episode].append(reward)
-                else:
-                    self.agent_history.state_evolution_per_episode[episode]     = [game_board]
-                    self.agent_history.actions_taken_per_episode[episode]       = [action]
-                    self.agent_history.rewards_on_action_per_episode[episode]   = [reward]
+                self.history.store_state_action_reward_for_current_episode([game_board, action, reward])
+
+                # If receives a penalty, reset the game
+                if reward == self.penalty:
+                    break
 
                 game_is_done = self.game.isFinished()
 
@@ -117,15 +116,23 @@ class Reinforce_Agent():
 
             max_cell, max_cell_count = Utility.get_max_cell_value_and_count_from_board(self.game.getBoard())
 
-            self.agent_history.episode_rewards.append(total_rewards)
-            self.agent_history.episode_lengths.append(steps)
-            self.agent_history.losses.append(loss.item())
-            self.agent_history.min_rewards.append(min_reward)
-            self.agent_history.max_rewards.append(max_reward)
-            self.agent_history.max_cell.append(max_cell)
-            self.agent_history.max_cell_count.append(max_cell_count)
+            self.history.store_episode_reward(total_rewards)
+            self.history.store_episode_length(steps)
+            self.history.store_loss(loss.item())
+            self.history.store_min_reward(min_reward)
+            self.history.store_max_reward(max_reward)
+            self.history.store_max_cell(max_cell)
+            self.history.store_max_cell_count(max_cell_count)
+
+            self.history.increment_episode()
 
             self.policy.reset_policy()
 
     def write_game_info(self):
-        self.logger.write_statistics(self.agent_history)
+        self.logger.write_statistics(self.history)
+
+        max_cell   = max(self.history.max_cell)
+        max_length = max(self.history.episode_lengths)
+        max_reward = max(self.history.episode_rewards)
+
+        print('MAX CELL: {} | MAX LENGTH: {} | MAX REWARD: {} | '.format(max_cell, max_length, max_reward))
