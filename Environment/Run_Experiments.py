@@ -32,7 +32,11 @@ import numpy as np
 agent = Reinforce_Agent()
 agent.learn()
 agent.write_game_info()
-agent.plot_rewards()
-agent.plot_episode_lengths()
+
+#agent.plot_rewards()
+#agent.plot_episode_lengths()
+#agent.plot_losses()
+#agent.plot_max_cell_evolution()
+#agent.plot_max_cell_distribution()
 
 print('Done')

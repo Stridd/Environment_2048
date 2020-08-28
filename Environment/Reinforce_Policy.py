@@ -32,7 +32,7 @@ class Reinforce_Policy(nn.Module):
 
         return output_2
 
-    def act(self, state):
+    def act(self, state, available_actions):
         # Convert the state from numpy to further process
         x = torch.from_numpy(state.astype(np.float32))
 
@@ -47,6 +47,8 @@ class Reinforce_Policy(nn.Module):
 
         # Use a categorical distribution since we have 4 actions
         distribution = Categorical(logits = prob_distr_params)
+
+        #distribution.probs = [distribution.probs[i] if i in available_actions else 0 for i in range(len(distribution.probs))][0]
 
         # Store entropy
         entropy = distribution.entropy()

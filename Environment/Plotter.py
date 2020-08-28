@@ -38,6 +38,42 @@ class Plotter():
     @staticmethod
     def plot_losses_using_history(history):
         losses = history.losses
-        return 
 
-        
+        plt.figure()
+        plt.plot([i for i in range(len(losses))], losses)
+        plt.xlabel('Episode')
+        plt.ylabel('Loss')
+        plt.title('Loss evolution')
+        plt.show()
+
+    @staticmethod
+    def plot_max_cell_using_history(history):
+        max_cell = history.max_cell
+
+        plt.figure()
+        plt.plot([i for i in range(len(max_cell))], max_cell)
+        plt.xlabel('Episode')
+        plt.ylabel('Max cell')
+        plt.title('Max cell evolution')
+        plt.show()
+
+    @staticmethod
+    def plot_max_cell_bins_using_history(history):
+        max_cell = history.max_cell
+        max_cell_count = history.max_cell_count
+
+        cells_and_occurences = {}
+
+        for i in range(len(max_cell)):
+            if max_cell[i] in cells_and_occurences.keys():
+                cells_and_occurences[max_cell[i]] += max_cell_count[i]
+            else:
+                cells_and_occurences[max_cell[i]] = max_cell_count[i]
+
+        # Sort and change the type to print in ascending order
+        cells_and_occurences = dict(sorted(cells_and_occurences.items()))
+        cells_and_occurences = {str(k):v for k,v in cells_and_occurences.items()}
+
+        # Taken from here: https://stackoverflow.com/questions/16010869/plot-a-bar-using-matplotlib-using-a-dictionary 
+        plt.bar(*zip(*cells_and_occurences.items()))
+        plt.show()

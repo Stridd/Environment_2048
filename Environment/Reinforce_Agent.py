@@ -75,39 +75,35 @@ class Reinforce_Agent():
 
             self.game.resetGame()
 
-            while not game_is_done and steps < Parameters.max_episode_duration:
+            while not game_is_done:
                 
                 game_board = self.game.getBoard()
+
                 state = np.array(game_board).reshape(1, -1)
 
-                action = self.policy.act(state)
-
                 available_actions = self.game.getAvailableMoves(game_board, len(game_board))
+
+                action = self.policy.act(state, available_actions)
 
                 reward = 0
 
                 if len(available_actions) == 0:
-
                     self.game.setFinishedIfNoActionIsAvailable()
                 elif action in available_actions:
 
                     self.game.takeAction(action)
+
                     reward = Utility.get_reward_from_dictionary(self.game.getMergedCellsAfterMove())
-                else:
-                    reward = self.penalty
+
+                    min_reward = reward if min_reward is None else min(reward, min_reward)
+                    max_reward = reward if max_reward is None else max(reward, max_reward) 
+
+                    self.policy.rewards.append(reward)
+
+                    self.history.store_state_action_reward_for_current_episode([game_board, action, reward])
 
                 # Check if game ended prematurely
-
-                min_reward = reward if min_reward is None else min(reward, min_reward)
-                max_reward = reward if max_reward is None else max(reward, max_reward) 
-
-                self.policy.rewards.append(reward)
-
-                self.history.store_state_action_reward_for_current_episode([game_board, action, reward])
-
                 game_is_done = self.game.isFinished()
-
-                steps += 1
 
             loss = self.train()
 
@@ -141,3 +137,12 @@ class Reinforce_Agent():
 
     def plot_episode_lengths(self):
         Plotter.plot_moving_average_of_episode_lengths_using_history(self.history, 10)
+
+    def plot_losses(self):
+        Plotter.plot_losses_using_history(self.history)
+
+    def plot_max_cell_evolution(self):
+        Plotter.plot_max_cell_using_history(self.history)
+
+    def plot_max_cell_distribution(self):
+        Plotter.plot_max_cell_bins_using_history(self.history)

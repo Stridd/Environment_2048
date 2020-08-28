@@ -21,7 +21,8 @@ class Logger():
 
     def build_data_per_episode_format(self):
 
-        self.data_per_episode_format = '| Output: %-60s|'
+        self.data_per_episode_format = '| State: %60s |'
+        self.data_per_episode_format += ' Output: %-40s|'
         self.data_per_episode_format += 'Entropy: %-5.4f|'
         self.data_per_episode_format += 'Action:  %-5s|'
         self.data_per_episode_format += 'Reward:  %-10s|'
@@ -65,6 +66,7 @@ class Logger():
 
     def write_data_per_episode_using_history(self, agent_history):
 
+        state_evolution_per_episode  = agent_history.state_evolution_per_episode
         reward_evolution_per_episode = agent_history.rewards_on_action_per_episode
         action_per_episode           = agent_history.actions_taken_per_episode
         state_evolution_per_episode  = agent_history.state_evolution_per_episode
@@ -78,7 +80,8 @@ class Logger():
 
                 for j in range(len(reward_evolution_per_episode[i])):
                     episode_file.write(self.data_per_episode_format
-                                    % (network_output[i][j], 
+                                    % (state_evolution_per_episode[i][j],
+                                        ['%.3f' % output for output in network_output[i][j]], 
                                         entropy[i][j], 
                                         action_per_episode[i][j], 
                                         reward_evolution_per_episode[i][j]))
