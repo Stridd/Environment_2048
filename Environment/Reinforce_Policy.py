@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from torch.distributions import Categorical
+from Parameters import Parameters
 
 
 class Reinforce_Policy(nn.Module):
@@ -23,7 +24,7 @@ class Reinforce_Policy(nn.Module):
 
     def forward(self, x):
 
-        copy_x = x.clone()
+        copy_x = x.clone().to(Parameters.device)
 
         output_1     = self.layer_1(copy_x)
         activation_1 = F.relu(output_1)
@@ -33,34 +34,43 @@ class Reinforce_Policy(nn.Module):
         return output_2
 
     def act(self, state, available_actions):
-        # Convert the state from numpy to further process
-        x = torch.from_numpy(state.astype(np.float32))
 
-        # Get the "estimations" from the neural network
-        prob_distr_params = self.forward(x)
+        if len(available_actions) != 0:
 
-        # Detach to store. We only take the first element as we only process for a single state
-        output = prob_distr_params.detach().numpy()[0]
+            # Convert the state from numpy to further process
+            x = torch.from_numpy(state.astype(np.float32))
 
-        # Store output
-        self.history.store_network_output_for_current_episode(output)
+            # Get the "estimations" from the neural network
+            prob_distr_params = self.forward(x)
 
-        # Use a categorical distribution since we have 4 actions
-        distribution = Categorical(logits = prob_distr_params)
+            # Detach to store. We only take the first element as we only process for a single state
+            output = prob_distr_params.cpu().detach().numpy()[0]
 
-        #distribution.probs = [distribution.probs[i] if i in available_actions else 0 for i in range(len(distribution.probs))][0]
+            # Store output
+            self.history.store_network_output_for_current_episode(output)
 
-        # Store entropy
-        entropy = distribution.entropy()
-        self.history.store_entropy_for_current_episode(entropy.item())
+            # Zero-out the logits for the invalid actions so they won't be selected in the sampling step
+            for i in range(len(prob_distr_params[0])):
+                if i not in available_actions:
+                    prob_distr_params[0][i] = float('-inf')
 
-        # Sample one of the actions
-        action = distribution.sample()
+            # Use a categorical distribution since we have 4 actions
+            distribution = Categorical(logits = prob_distr_params)
 
-        # Get the log probability
-        log_probability = distribution.log_prob(action)
+            # Store entropy
+            entropy = distribution.entropy()
+            self.history.store_entropy_for_current_episode(entropy.item())
 
-        # Store it
-        self.log_probablities.append(log_probability)
+            # Sample one of the actions
+            action = distribution.sample()
 
-        return action.item()
+            # Get the log probability
+            log_probability = distribution.log_prob(action)
+
+            # Store it
+            self.log_probablities.append(log_probability)
+
+            return action.detach().item()
+    
+        else:
+            return -1

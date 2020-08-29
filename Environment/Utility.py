@@ -1,5 +1,6 @@
 from abc import ABC
-import numpy as np 
+import numpy as np
+import pandas as pd 
 
 class Utility(ABC):
 
@@ -62,3 +63,28 @@ class Utility(ABC):
 
         work_state = (work_state - mean_state) / variance_state
         return work_state
+
+    @staticmethod
+    def export_history_to_csv(history):
+
+        losses          = agent_history.losses
+        rewards         = agent_history.episode_rewards
+        episode_lengths = agent_history.episode_lengths
+        min_rewards     = agent_history.min_rewards
+        max_rewards     = agent_history.max_rewards
+        max_cells       = agent_history.max_cell
+        max_cells_count = agent_history.max_cell_count
+
+        dataFrame = pd.DataFrame()
+        headers = ['Loss','Total_Reward','Length','Min_Reward','Max_Reward','Max_Cell','Max_Cell_Count']
+        dataFrame[0][0:6] = headers
+        dataFrame[1:][0] = rewards
+        dataFrame[1:][1] = episode_lengths
+        dataFrame[1:][2] = episode_lengths
+        dataFrame[1:][3]= min_rewards
+        dataFrame[1:][4] = max_rewards
+        dataFrame[1:][5] = max_cells
+        dataFrame[1:][6] = max_cells_count
+
+        dataFrame.to_csv('C:\\agent_data.csv')
+

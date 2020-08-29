@@ -3,11 +3,9 @@ class Parameters:
     
     lr = 0.001
 
-    episodes = 1
+    episodes = 10000
     board_size = 4
     
-    penalty = -2
-
     input_size = 16
     output_size = 4
     device = 'cuda'

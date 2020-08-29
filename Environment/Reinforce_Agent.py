@@ -19,15 +19,13 @@ class Reinforce_Agent():
 
         self.history = History()
 
-        self.policy = Reinforce_Policy(Parameters.input_size, Parameters.output_size, self.history)
+        self.policy = Reinforce_Policy(Parameters.input_size, Parameters.output_size, self.history).to(Parameters.device)
 
         self.game =  Environment_2048(4)
 
         self.gamma  = Parameters.gamma
 
         self.optimizer = optim.Adam(self.policy.parameters(), lr=Parameters.lr)
-
-        self.penalty = Parameters.penalty
 
         
     def setup_logger(self):
@@ -47,8 +45,8 @@ class Reinforce_Agent():
             future_returns = self.policy.rewards[t] + self.gamma * future_returns
             returns[t] = future_returns
 
-        returns = torch.tensor(returns)
-        log_probabilities = torch.stack(self.policy.log_probablities).flatten()
+        returns = torch.tensor(returns).to(Parameters.device)
+        log_probabilities = torch.stack(self.policy.log_probablities).flatten().to(Parameters.device)
 
         loss = -log_probabilities * returns
         # Loss needs to be an item, not an tensor.
@@ -102,9 +100,9 @@ class Reinforce_Agent():
 
                     self.history.store_state_action_reward_for_current_episode([game_board, action, reward])
 
-                # Check if game ended prematurely
+                steps += 1
                 game_is_done = self.game.isFinished()
-
+         
             loss = self.train()
 
             total_rewards = np.sum(self.policy.rewards)

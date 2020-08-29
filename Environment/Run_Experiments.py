@@ -29,6 +29,7 @@ from Reinforce_Agent import Reinforce_Agent
 from Parameters import Parameters
 import numpy as np
 
+#for i in range(5):
 agent = Reinforce_Agent()
 agent.learn()
 agent.write_game_info()
