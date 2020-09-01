@@ -60,7 +60,6 @@ class Reinforce_Agent():
 
     def learn(self):
 
-
         for episode in range(Parameters.episodes):
             print('Processing episode {}'.format(episode))
 
@@ -77,7 +76,7 @@ class Reinforce_Agent():
                 
                 game_board = self.game.getBoard()
 
-                state = np.array(game_board).reshape(1, -1)
+                state = Utility.transform_board_into_state(game_board)
 
                 available_actions = self.game.getAvailableMoves(game_board, len(game_board))
 
@@ -101,6 +100,8 @@ class Reinforce_Agent():
                     self.history.store_state_action_reward_for_current_episode([game_board, action, reward])
 
                 steps += 1
+
+                self.logger.write_data_per_episode_using_history(self.history)
                 game_is_done = self.game.isFinished()
          
             loss = self.train()
@@ -117,30 +118,8 @@ class Reinforce_Agent():
             self.history.store_max_cell(max_cell)
             self.history.store_max_cell_count(max_cell_count)
 
+            self.logger.write_episodic_info_using_history(self.history)
+            self.history.clear_current_episode_data()
             self.history.increment_episode()
 
             self.policy.reset_policy()
-
-    def write_game_info(self):
-        self.logger.write_statistics(self.history)
-
-        max_cell   = max(self.history.max_cell)
-        max_length = max(self.history.episode_lengths)
-        max_reward = max(self.history.episode_rewards)
-
-        print('MAX CELL: {} | MAX LENGTH: {} | MAX REWARD: {} | '.format(max_cell, max_length, max_reward))
-
-    def plot_rewards(self):
-        Plotter.plot_moving_average_of_reward_using_history(self.history, 10)
-
-    def plot_episode_lengths(self):
-        Plotter.plot_moving_average_of_episode_lengths_using_history(self.history, 10)
-
-    def plot_losses(self):
-        Plotter.plot_losses_using_history(self.history)
-
-    def plot_max_cell_evolution(self):
-        Plotter.plot_max_cell_using_history(self.history)
-
-    def plot_max_cell_distribution(self):
-        Plotter.plot_max_cell_bins_using_history(self.history)

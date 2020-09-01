@@ -1,8 +1,13 @@
 from abc import ABC
 import numpy as np
-import pandas as pd 
+import pandas as pd
+import os 
+from Enums import RewardFunctions
+
 
 class Utility(ABC):
+
+    func_map = None
 
     @staticmethod
     def get_reward_from_dictionary(cells_dictionary):
@@ -11,6 +16,32 @@ class Utility(ABC):
             reward += cell * times_merged
 
         return reward 
+
+    @staticmethod
+    def get_reward(data = None):
+        functions_map = get_functions_map()
+
+    @staticmethod
+    def get_functions_map():
+
+        if func_map == None:
+            build_func_map()
+        
+        return func_map
+
+    def build_func_map():
+        func_map = {}
+        func_map[RewardFunctions.cells_merged]          = get_reward_from_dictionary
+        func_map[RewardFunctions.distance_to_2048]      = get_reward_by_distance_to_target_cell
+        func_map[RewardFunctions.high_cell_high_reward] = get_high_cell_high_reward
+
+    @staticmethod
+    def get_reward_by_distance_to_target_cell(cells_dictionary, target_cell):
+        raise NotImplementedError
+
+    @staticmethod
+    def get_high_cell_high_reward(cells_dictionary):
+        raise NotImplementedError
 
     @staticmethod
     def pretty_print_game_board(board):
@@ -65,26 +96,30 @@ class Utility(ABC):
         return work_state
 
     @staticmethod
-    def export_history_to_csv(history):
+    def export_history_to_csv(history, file_name):
 
-        losses          = agent_history.losses
-        rewards         = agent_history.episode_rewards
-        episode_lengths = agent_history.episode_lengths
-        min_rewards     = agent_history.min_rewards
-        max_rewards     = agent_history.max_rewards
-        max_cells       = agent_history.max_cell
-        max_cells_count = agent_history.max_cell_count
+        losses          = history.losses
+        rewards         = history.episode_rewards
+        episode_lengths = history.episode_lengths
+        min_rewards     = history.min_rewards
+        max_rewards     = history.max_rewards
+        max_cells       = history.max_cell
+        max_cells_count = history.max_cell_count
 
         dataFrame = pd.DataFrame()
         headers = ['Loss','Total_Reward','Length','Min_Reward','Max_Reward','Max_Cell','Max_Cell_Count']
-        dataFrame[0][0:6] = headers
-        dataFrame[1:][0] = rewards
-        dataFrame[1:][1] = episode_lengths
-        dataFrame[1:][2] = episode_lengths
-        dataFrame[1:][3]= min_rewards
-        dataFrame[1:][4] = max_rewards
-        dataFrame[1:][5] = max_cells
-        dataFrame[1:][6] = max_cells_count
+        dataFrame.loc[:, 0] = losses
+        dataFrame.loc[:, 1] = rewards
+        dataFrame.loc[:, 2] = episode_lengths
+        dataFrame.loc[:, 3] = min_rewards
+        dataFrame.loc[:, 4] = max_rewards
+        dataFrame.loc[:, 5] = max_cells
+        dataFrame.loc[:, 6] = max_cells_count
 
-        dataFrame.to_csv('C:\\agent_data.csv')
+        directory_to_save = os.path.dirname(__file__)
+        dataFrame.to_csv(directory_to_save + '\\' + file_name, header = headers)
 
+    @staticmethod
+    def transform_board_into_state(game_board):
+        state = np.array(game_board).reshape(1, -1)
+        return state 

@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# coding: utf-8
+
 
 # # To-DO:
 # - Add pretty print for episode (Game length, maximum cell, maximum cell apparition, end of game score, etc)
@@ -30,14 +29,11 @@ from Parameters import Parameters
 import numpy as np
 
 #for i in range(5):
+
 agent = Reinforce_Agent()
 agent.learn()
-agent.write_game_info()
 
-#agent.plot_rewards()
-#agent.plot_episode_lengths()
-#agent.plot_losses()
-#agent.plot_max_cell_evolution()
-#agent.plot_max_cell_distribution()
+#agent.export_history_to_csv('Episode_%d' % i + '.csv')
+
 
 print('Done')
