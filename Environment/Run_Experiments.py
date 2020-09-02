@@ -25,15 +25,7 @@
 # - Epochs
 
 from Reinforce_Agent import Reinforce_Agent
-from Parameters import Parameters
-import numpy as np
-
-#for i in range(5):
 
 agent = Reinforce_Agent()
 agent.learn()
-
-#agent.export_history_to_csv('Episode_%d' % i + '.csv')
-
-
-print('Done')
+agent.plot_statistics_to_files()

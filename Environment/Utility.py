@@ -1,7 +1,8 @@
 from abc import ABC
 import numpy as np
 import pandas as pd
-import os 
+import os
+import glob 
 from Enums import RewardFunctions
 
 
@@ -123,3 +124,47 @@ class Utility(ABC):
     def transform_board_into_state(game_board):
         state = np.array(game_board).reshape(1, -1)
         return state 
+
+    @staticmethod
+    def clean_folder(path):
+        folder_path = path + '\\' + '*'
+        old_files = glob.glob(folder_path)
+        for old_file in old_files:
+            os.remove(old_file)
+
+    @staticmethod
+    def make_folder_if_not_exist_otherwise_clean_it(path):
+        if not os.path.isdir(path):
+            os.mkdir(path)
+        else:
+            Utility.clean_folder(path)
+
+    @staticmethod
+    def calculate_moving_average_for(data):
+        moving_average_coefficient = len(data) // 10
+
+        # Decided to use convolution. Reason is here: https://stackoverflow.com/questions/13728392/moving-average-or-running-mean
+        moving_average = np.convolve(data, 
+                                    np.ones((moving_average_coefficient,))/moving_average_coefficient, 
+                                    mode='valid')
+
+        return moving_average
+
+    @staticmethod
+    def build_and_sort_max_cell_distribution_from_history(history):
+        max_cell       = history.max_cell
+        max_cell_count = history.max_cell_count
+
+        cells_and_occurences = {}
+
+        for i in range(len(max_cell)):
+            if max_cell[i] in cells_and_occurences.keys():
+                cells_and_occurences[max_cell[i]] += max_cell_count[i]
+            else:
+                cells_and_occurences[max_cell[i]] = max_cell_count[i]
+
+        # Sort and change the type to print in ascending order
+        cells_and_occurences = dict(sorted(cells_and_occurences.items()))
+        cells_and_occurences = {str(k):v for k,v in cells_and_occurences.items()}
+
+        return cells_and_occurences

@@ -123,3 +123,8 @@ class Reinforce_Agent():
             self.history.increment_episode()
 
             self.policy.reset_policy()
+
+    def plot_statistics_to_files(self):
+        folder_to_save_plots = os.path.dirname(__file__) + '\\' + Parameters.plots_folder_name
+        plotter = Plotter(folder_to_save_plots)
+        plotter.generate_and_save_plots_from_history(self.history)

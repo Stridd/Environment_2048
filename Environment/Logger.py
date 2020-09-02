@@ -1,4 +1,5 @@
 from Parameters import Parameters
+from Utility import Utility
 import glob
 import os 
 
@@ -8,12 +9,7 @@ class Logger():
         logs_folder_name = Parameters.logs_folder_name
         logs_folder_path = logs_path + '\\' + logs_folder_name
 
-        if not os.path.isdir(logs_folder_path):
-            os.mkdir(logs_folder_path)
-        else:
-            old_logs = glob.glob(logs_folder_path + '\\' + '.*')
-            for f in old_logs:
-                os.remove(f)
+        Utility.make_folder_if_not_exist_otherwise_clean_it(logs_folder_path)
 
         self.path_to_folder = logs_folder_path + '\\'
 
@@ -24,9 +20,9 @@ class Logger():
 
     def build_data_per_episode_format(self):
 
-        self.data_per_episode_format = '| State: %60s |'
-        self.data_per_episode_format += ' Output: %-40s|'
-        self.data_per_episode_format += 'Entropy: %-5.4f|'
+        self.data_per_episode_format = '| State: %80s |'
+        self.data_per_episode_format += ' Output: %40s|'
+        self.data_per_episode_format += 'Entropy: %10.4f|'
         self.data_per_episode_format += 'Action:  %-5s|'
         self.data_per_episode_format += 'Reward:  %-10s|'
 
@@ -38,7 +34,7 @@ class Logger():
         self.episode_info_format += 'Max Reward: %-10s|'
         self.episode_info_format += 'Total Reward: %-10s|'
         self.episode_info_format += 'Max cell: %-10s|'
-        self.episode_info_format += 'Max Cell Count: %-3s|'
+        self.episode_info_format += 'Max cell count: %-3s|'
 
     def write_episodic_info_using_history(self, agent_history):
 
