@@ -6,6 +6,7 @@ from Logger  import Logger
 from Utility import Utility
 from Parameters import Parameters
 from Plotter import Plotter
+from Data_Helper import Data_Helper
 
 import torch.optim as optim
 import numpy as np
@@ -27,12 +28,12 @@ class Reinforce_Agent():
 
         self.optimizer = optim.Adam(self.policy.parameters(), lr=Parameters.lr)
 
-        
+        self.data_helper = Data_Helper() 
+
     def setup_logger(self):
         current_directory = os.path.dirname(__file__)
 
         self.logger = Logger(current_directory)
-
 
     def train(self):
         episode_length = len(self.policy.rewards)
@@ -63,66 +64,82 @@ class Reinforce_Agent():
         for episode in range(Parameters.episodes):
             print('Processing episode {}'.format(episode))
 
+            self.play_until_end_of_game()
+            self.store_and_write_data()
+            self.clean_up_episode_history()
+
+    def play_until_end_of_game(self):
+        
             game_is_done = False
-
-            min_reward = None
-            max_reward = None
-
-            steps = 0
 
             self.game.resetGame()
 
             while not game_is_done:
-                
+
                 game_board = self.game.getBoard()
 
-                state = Utility.transform_board_into_state(game_board)
-
+                # Need available actions to 0-out the probabilities of the invalid moves
+                # Also to check if the game is finished
                 available_actions = self.game.getAvailableMoves(game_board, len(game_board))
-
-                action = self.policy.act(state, available_actions)
-
-                reward = 0
 
                 if len(available_actions) == 0:
                     self.game.setFinishedIfNoActionIsAvailable()
-                elif action in available_actions:
+                else:
+                    
+                    self.data_helper.game_board        = game_board
+                    self.data_helper.available_actions = available_actions
 
-                    self.game.takeAction(action)
+                    self.perform_action_and_store_data(self.data_helper)
 
-                    reward = Utility.get_reward_from_dictionary(self.game.getMergedCellsAfterMove())
-
-                    min_reward = reward if min_reward is None else min(reward, min_reward)
-                    max_reward = reward if max_reward is None else max(reward, max_reward) 
-
-                    self.policy.rewards.append(reward)
-
-                    self.history.store_state_action_reward_for_current_episode([game_board, action, reward])
-
-                steps += 1
-
-                self.logger.write_data_per_episode_using_history(self.history)
                 game_is_done = self.game.isFinished()
-         
-            loss = self.train()
 
-            total_rewards = np.sum(self.policy.rewards)
 
-            max_cell, max_cell_count = Utility.get_max_cell_value_and_count_from_board(self.game.getBoard())
+    def perform_action_and_store_data(self, data_helper):
+        reward = 0
 
-            self.history.store_episode_reward(total_rewards)
-            self.history.store_episode_length(steps)
-            self.history.store_loss(loss.item())
-            self.history.store_min_reward(min_reward)
-            self.history.store_max_reward(max_reward)
-            self.history.store_max_cell(max_cell)
-            self.history.store_max_cell_count(max_cell_count)
+        # Apply preprocessing and other operations
+        state = Utility.transform_board_into_state(data_helper.game_board)
 
-            self.logger.write_episodic_info_using_history(self.history)
-            self.history.clear_current_episode_data()
-            self.history.increment_episode()
+        # Need available_actions to rule out invalid actions
+        action = self.policy.get_action(state, data_helper.available_actions)
 
-            self.policy.reset_policy()
+        self.game.takeAction(action)
+
+        reward = Utility.get_reward_from_dictionary(self.game.getMergedCellsAfterMove())
+
+        # Store min and max reward for statistics
+        data_helper.store_min_max_reward(reward)
+
+        self.policy.store_reward(reward)
+
+        # Store the game board to check clearly the state of the game
+        self.history.store_state_action_reward_for_current_episode([data_helper.game_board, action, reward])
+
+        # Increase the steps taken to see episode length
+        data_helper.steps += 1
+
+    def store_and_write_data(self):
+        self.data_helper.loss = self.train()
+        self.data_helper.game_board = self.game.getBoard()
+        self.data_helper.total_reward = np.sum(self.policy.rewards)
+
+        self.data_helper.store_max_cell_statistics()
+
+        self.history.add_data_helper_info(self.data_helper)
+        
+        self.logger.write_data_to_logs_using_history(self.history)
+
+    def clean_up_episode_history(self):
+        self.logger.close_log_for_current_episode()
+
+        self.data_helper.clear_current_data()
+        self.history.clear_current_episode_data()
+
+        self.history.increment_episode()
+
+        self.logger.open_new_log_for_current_episode(self.history)
+
+        self.policy.reset_policy()
 
     def plot_statistics_to_files(self):
         folder_to_save_plots = os.path.dirname(__file__) + '\\' + Parameters.plots_folder_name

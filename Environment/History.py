@@ -63,3 +63,12 @@ class History():
 
         self.network_output                          = []
         self.entropy                                 = []
+
+    def add_data_helper_info(self, data):
+        self.store_episode_reward(data.total_reward)
+        self.store_episode_length(data.steps)
+        self.store_loss(data.loss.item())
+        self.store_min_reward(data.min_reward)
+        self.store_max_reward(data.max_reward)
+        self.store_max_cell(data.max_cell)
+        self.store_max_cell_count(data.max_cell_count)

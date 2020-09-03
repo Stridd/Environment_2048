@@ -15,6 +15,10 @@ class Logger():
 
         self.episode_info_path = self.path_to_folder + Parameters.episode_data_file_name
 
+        # When it's initialized the first episode is the 0 episode
+        log_file_name = self.path_to_folder + 'episode_' + '%s' + '.txt'
+        self.log_for_current_episode = open(log_file_name % 0, 'a+')
+
         self.build_data_per_episode_format()
         self.build_episode_info_format()
 
@@ -35,6 +39,18 @@ class Logger():
         self.episode_info_format += 'Total Reward: %-10s|'
         self.episode_info_format += 'Max cell: %-10s|'
         self.episode_info_format += 'Max cell count: %-3s|'
+
+    def write_data_to_logs_using_history(self, agent_history):
+        self.write_episodic_info_using_history(agent_history)
+        self.write_data_for_current_episode_using_history(agent_history)
+    
+    def open_new_log_for_current_episode(self, agent_history):
+        current_episode = agent_history.current_episode
+        log_file_name = self.path_to_folder + 'episode_' + '%s' + '.txt'
+        self.log_for_current_episode = open(log_file_name % current_episode, 'a+')
+
+    def close_log_for_current_episode(self):
+        self.log_for_current_episode.close()
 
     def write_episodic_info_using_history(self, agent_history):
 
@@ -62,7 +78,7 @@ class Logger():
         episode_info_file.write('\n')
         episode_info_file.close()
 
-    def write_data_per_episode_using_history(self, agent_history):
+    def write_data_for_current_episode_using_history(self, agent_history):
 
         state_evolution_current_episode         = agent_history.state_evolution_current_episode
         rewards_current_episode                 = agent_history.rewards_current_episode
@@ -70,15 +86,12 @@ class Logger():
         network_output                          = agent_history.network_output
         entropy                                 = agent_history.entropy
         current_episode                         = agent_history.current_episode
-
-        file_name = self.path_to_folder + 'episode_' + '%s' + '.txt'
-        with open(file_name % current_episode, 'a+') as episode_file:
-            episode_file.write(self.data_per_episode_format
-                                    % (state_evolution_current_episode[-1],
-                                        ['%.3f' % output for output in network_output[-1]], 
-                                        entropy[-1], 
-                                        actions_current_episode[-1], 
-                                        rewards_current_episode[-1]))
-            episode_file.write('\n')
-
-                   
+ 
+        for i in range(len(entropy)):
+            self.log_for_current_episode.write(self.data_per_episode_format
+                                    % (state_evolution_current_episode[i],
+                                        ['%.3f' % output for output in network_output[i]], 
+                                        entropy[i], 
+                                        actions_current_episode[i], 
+                                        rewards_current_episode[i]))
+            self.log_for_current_episode.write('\n')
