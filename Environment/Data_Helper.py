@@ -2,15 +2,7 @@ from Utility import Utility
 
 class Data_Helper():
     def __init__(self):
-        self.steps = 0
-        self.available_actions = None
-        self.min_reward        = None
-        self.max_reward        = None
-        self.game_board        = None
-        self.loss              = None
-        self.max_cell          = None
-        self.max_cell_count    = None
-        self.total_reward     = None 
+        self.clear_current_data()
 
     def store_min_max_reward(self, reward):
         self.min_reward = reward if self.min_reward is None else min(reward, self.min_reward)
@@ -20,6 +12,7 @@ class Data_Helper():
         self.max_cell, self.max_cell_count = Utility.get_max_cell_value_and_count_from_board(self.game_board)
 
     def clear_current_data(self):
+        self.steps = 0
         self.available_actions = None
         self.min_reward        = None
         self.max_reward        = None
@@ -27,4 +20,4 @@ class Data_Helper():
         self.loss              = None
         self.max_cell          = None
         self.max_cell_count    = None
-        self.total_reward      = None
+        self.total_reward     = None 

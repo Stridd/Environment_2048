@@ -1,7 +1,9 @@
+rem You should set the path to the location of your anaconda3 
 SET anaconda_path=E:/Programs/Anaconda3/
 
 call %anaconda_path%/Scripts/activate.bat %anaconda_path%
-echo Activating Cython Environment
+echo Activating Environment
+rem Replace cython with the name of your environment
 call conda activate cython
 
 call echo Deleting older files

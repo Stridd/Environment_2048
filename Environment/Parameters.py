@@ -4,7 +4,7 @@ class Parameters:
     
     lr = 0.001
 
-    episodes = 10
+    episodes = 10000
     board_size = 4
     
     input_size = 16
