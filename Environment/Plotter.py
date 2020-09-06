@@ -2,15 +2,18 @@ import matplotlib.pyplot as plt
 from Utility import Utility
 
 class Plotter():
-    def __init__(self, folder_for_plots):
-        self.folder_for_plots = folder_for_plots
+    def __init__(self, folder_for_plots, time_of_experiment):
 
-        Utility.make_folder_if_not_exist_otherwise_clean_it(folder_for_plots)
+        Utility.make_folder_if_not_exist(folder_for_plots)
+        
+        self.folder_for_plots = folder_for_plots + '\\' + time_of_experiment
+        
+        Utility.make_folder_if_not_exist(self.folder_for_plots)
 
     def generate_and_save_plots_from_history(self, history):
         self.plot_ma_of_reward_from_history(history)
         self.plot_ma_of_episode_length_from_history(history)
-        self.plot_loss_from_history(history)
+        self.plot_ma_of_loss_from_history(history)
         self.plot_max_cell_distribution_from_history(history)
 
     def plot_ma_of_reward_from_history(self, history):
@@ -45,9 +48,11 @@ class Plotter():
 
         self.plot_and_save_figure(concatenated_data)
         
-    def plot_loss_from_history(self, history):
+    def plot_ma_of_loss_from_history(self, history):
 
         losses = history.losses
+
+        moving_average = Utility.calculate_moving_average_for(losses)
 
         title  = 'Loss evolution'
         ylabel = 'Loss'

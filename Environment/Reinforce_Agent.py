@@ -14,13 +14,19 @@ import torch
 import matplotlib.pyplot as plt
 import os 
 
+from datetime import datetime
+
 class Reinforce_Agent():
     def __init__(self):
-        self.setup_logger()
+
+        time_of_experiment = Utility.get_time_of_experiment()
+        
+        self.setup_logger(time_of_experiment)
+        self.setup_plotter(time_of_experiment)
 
         self.history = History()
 
-        self.policy = Reinforce_Policy(Parameters.input_size, Parameters.output_size, self.history).to(Parameters.device)
+        self.policy = Reinforce_Policy(self.history).to(Parameters.device)
 
         self.game =  Environment_2048(4)
 
@@ -30,10 +36,15 @@ class Reinforce_Agent():
 
         self.data_helper = Data_Helper() 
 
-    def setup_logger(self):
+    def setup_logger(self, time_of_experiment):
         current_directory = os.path.dirname(__file__)
 
-        self.logger = Logger(current_directory)
+        self.logger = Logger(current_directory, time_of_experiment)
+
+    def setup_plotter(self, time_of_experiment):
+        folder_to_save_plots = os.path.dirname(__file__) + '\\' + Parameters.plots_folder_name
+        # Use the logger time of experiment to save figures to corresponding folder
+        self.plotter = Plotter(folder_to_save_plots, time_of_experiment)
 
     def train(self):
         episode_length = len(self.policy.rewards)
@@ -67,6 +78,7 @@ class Reinforce_Agent():
             self.play_until_end_of_game()
             self.store_and_write_data()
             self.clean_up_episode_history()
+        self.logger.save_parameters_to_json()
 
     def play_until_end_of_game(self):
         
@@ -92,7 +104,7 @@ class Reinforce_Agent():
                     self.perform_action_and_store_data(self.data_helper)
 
                 game_is_done = self.game.isFinished()
-
+    
 
     def perform_action_and_store_data(self, data_helper):
         reward = 0
@@ -137,11 +149,10 @@ class Reinforce_Agent():
 
         self.history.increment_episode()
 
-        self.logger.open_new_log_for_current_episode(self.history)
+        if self.history.current_episode < Parameters.episodes:
+            self.logger.open_new_log_for_current_episode(self.history)
 
         self.policy.reset_policy()
 
     def plot_statistics_to_files(self):
-        folder_to_save_plots = os.path.dirname(__file__) + '\\' + Parameters.plots_folder_name
-        plotter = Plotter(folder_to_save_plots)
-        plotter.generate_and_save_plots_from_history(self.history)
+        self.plotter.generate_and_save_plots_from_history(self.history)

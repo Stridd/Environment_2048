@@ -2,8 +2,10 @@ from abc import ABC
 import numpy as np
 import pandas as pd
 import os
-import glob 
+import glob
+from datetime import datetime 
 from Enums import RewardFunctions
+from Parameters import Parameters
 
 
 class Utility(ABC):
@@ -133,11 +135,9 @@ class Utility(ABC):
             os.remove(old_file)
 
     @staticmethod
-    def make_folder_if_not_exist_otherwise_clean_it(path):
+    def make_folder_if_not_exist(path):
         if not os.path.isdir(path):
             os.mkdir(path)
-        else:
-            Utility.clean_folder(path)
 
     @staticmethod
     def calculate_moving_average_for(data):
@@ -168,3 +168,19 @@ class Utility(ABC):
         cells_and_occurences = {str(k):v for k,v in cells_and_occurences.items()}
 
         return cells_and_occurences
+
+    @staticmethod
+    def get_time_of_experiment():
+        time_of_experiment = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        return time_of_experiment
+
+    def get_parameters_class_as_json():
+        json_content = {}
+        json_content['Episodes']      = Parameters.episodes
+        json_content['Learning rate'] = Parameters.lr
+        json_content['Gamma']         = Parameters.gamma
+        json_content['Board size']    = Parameters.board_size
+        json_content['Input size']    = Parameters.input_size
+        json_content['Output size']   = Parameters.output_size
+        json_content['Model']         = str(Parameters.layers)
+        return json_content

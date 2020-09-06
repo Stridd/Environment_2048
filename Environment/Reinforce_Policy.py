@@ -1,17 +1,14 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
 from torch.distributions import Categorical
 from Parameters import Parameters
 
-
 class Reinforce_Policy(nn.Module):
-    def __init__(self, input_size, output_size, history):
+    def __init__(self, history):
         super(Reinforce_Policy, self).__init__()
 
-        self.layer_1 = nn.Linear(input_size, 128)
-        self.layer_2 = nn.Linear(128, output_size)
+        self.model = nn.Sequential(*Parameters.layers) 
 
         self.history = history
 
@@ -26,12 +23,8 @@ class Reinforce_Policy(nn.Module):
 
         copy_x = x.clone().to(Parameters.device)
 
-        output_1     = self.layer_1(copy_x)
-        activation_1 = F.relu(output_1)
-
-        output_2     = self.layer_2(activation_1)
-
-        return output_2
+        output = self.model(copy_x)
+        return output
 
     def get_action(self, state, available_actions):
 
