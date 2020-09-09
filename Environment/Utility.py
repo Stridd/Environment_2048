@@ -124,7 +124,8 @@ class Utility(ABC):
 
     @staticmethod
     def transform_board_into_state(game_board):
-        state = np.array(game_board).reshape(1, -1)
+        state = Utility.process_state_using_log2_and_factor(game_board, 11)
+        state = np.array(state).reshape(1, -1)
         return state 
 
     @staticmethod
@@ -171,7 +172,7 @@ class Utility(ABC):
 
     @staticmethod
     def get_time_of_experiment():
-        time_of_experiment = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        time_of_experiment = datetime.now().strftime('%d-%m-%Y_%H-%M-%S')
         return time_of_experiment
 
     def get_parameters_class_as_json():
@@ -182,5 +183,5 @@ class Utility(ABC):
         json_content['Board size']    = Parameters.board_size
         json_content['Input size']    = Parameters.input_size
         json_content['Output size']   = Parameters.output_size
-        json_content['Model']         = str(Parameters.layers)
+        json_content['Model']         = repr(Parameters.layers)
         return json_content

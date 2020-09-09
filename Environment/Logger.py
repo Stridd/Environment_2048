@@ -39,7 +39,7 @@ class Logger():
         self.data_per_episode_format += ' Output: %40s|'
         self.data_per_episode_format += 'Entropy: %10.4f|'
         self.data_per_episode_format += 'Action:  %-5s|'
-        self.data_per_episode_format += 'Reward:  %-10s|'
+        self.data_per_episode_format += 'Reward:  %-10.2f|'
 
     def build_experiment_info_format(self):
         self.experiment_info_format = '| Episode %5s |'

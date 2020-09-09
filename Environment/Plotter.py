@@ -88,3 +88,4 @@ class Plotter():
         plt.ylabel(ylabel)
         plt.title(title)
         plt.savefig(self.folder_for_plots + '\\' + file_name, bbox_inches='tight')
+        plt.close()

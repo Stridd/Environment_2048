@@ -1,13 +1,15 @@
-from Enums import RewardFunctions
+from Enums import RewardFunctions, Optimizers
 
 import torch.nn as nn
 
 class Parameters:
     gamma = 0.9
     
+    optimizer = Optimizers.ADAM
+
     lr = 0.001
 
-    episodes = 10
+    episodes = 1000
     board_size = 4
     
     input_size = 16
