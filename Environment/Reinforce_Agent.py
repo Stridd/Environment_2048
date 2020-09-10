@@ -8,7 +8,7 @@ from Parameters import Parameters
 from Plotter import Plotter
 from Data_Helper import Data_Helper
 
-import torch.optim as optim
+
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
@@ -32,8 +32,7 @@ class Reinforce_Agent():
 
         self.gamma  = Parameters.gamma
 
-        self.optimizer = optim.Adam(self.policy.parameters(), lr=Parameters.lr)
-
+        self.optimizer = Utility.get_optimizer_for_parameters(self.policy.parameters())
         self.data_helper = Data_Helper() 
 
     def setup_logger(self, time_of_experiment):
@@ -57,12 +56,14 @@ class Reinforce_Agent():
             future_returns = self.policy.rewards[t] + self.gamma * future_returns
             returns[t] = future_returns
 
-        returns = torch.tensor(returns).to(Parameters.device)
+        #normalized_returns = (returns - np.mean(returns)) / (np.std(returns) + 1e-10)
+        normalized_returns = returns - np.mean(returns)
+        normalized_returns = torch.tensor(normalized_returns).to(Parameters.device)
         log_probabilities = torch.stack(self.policy.log_probablities).flatten().to(Parameters.device)
 
-        loss = -log_probabilities * returns
+        loss = -log_probabilities * normalized_returns
         # Loss needs to be an item, not an tensor.
-        loss = loss[0]
+        loss = torch.sum(loss)
 
         self.optimizer.zero_grad()
         loss.backward()
@@ -118,7 +119,7 @@ class Reinforce_Agent():
         self.game.takeAction(action)
 
         reward = Utility.get_reward_from_dictionary(self.game.getMergedCellsAfterMove())
-
+        # Small preprocessing
         # Store min and max reward for statistics
         data_helper.store_min_max_reward(reward)
 

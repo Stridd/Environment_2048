@@ -32,4 +32,5 @@ def create_and_train_reinforce_agent():
     agent.plot_statistics_to_files()
 
 if __name__ == '__main__':
-    create_and_train_reinforce_agent()
+    for i in range(5):
+        create_and_train_reinforce_agent()

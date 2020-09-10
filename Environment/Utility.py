@@ -4,9 +4,9 @@ import pandas as pd
 import os
 import glob
 from datetime import datetime 
-from Enums import RewardFunctions
+from Enums import RewardFunctions, Optimizers
 from Parameters import Parameters
-
+import torch.optim as optim
 
 class Utility(ABC):
 
@@ -175,13 +175,29 @@ class Utility(ABC):
         time_of_experiment = datetime.now().strftime('%d-%m-%Y_%H-%M-%S')
         return time_of_experiment
 
+    @staticmethod
     def get_parameters_class_as_json():
         json_content = {}
-        json_content['Episodes']      = Parameters.episodes
-        json_content['Learning rate'] = Parameters.lr
-        json_content['Gamma']         = Parameters.gamma
-        json_content['Board size']    = Parameters.board_size
-        json_content['Input size']    = Parameters.input_size
-        json_content['Output size']   = Parameters.output_size
-        json_content['Model']         = repr(Parameters.layers)
+        json_content['Episodes']        = Parameters.episodes
+        json_content['Learning rate']   = Parameters.lr
+        json_content['Momentum']        = Parameters.momentum
+        json_content['Gamma']           = Parameters.gamma
+        json_content['Board size']      = Parameters.board_size
+        json_content['Input size']      = Parameters.input_size
+        json_content['Output size']     = Parameters.output_size
+        json_content['Optimizer']       = str(Optimizers(Parameters.optimizer).name)
+        json_content['Reward function'] = str(RewardFunctions(Parameters.reward_type).name)
+        json_content['Model']           = repr(Parameters.layers)
         return json_content
+
+    @staticmethod
+    def get_optimizer_for_parameters(parameters):
+        optimizer = None
+        if Parameters.optimizer == Optimizers.ADAM:
+            optimizer = optim.Adam(parameters, lr = Parameters.lr)
+        elif Parameters.optimizer == Optimizers.RMSPROP:
+            optimizer = optim.RMSprop(parameters, lr = Parameters.lr, momentum = Parameters.momentum)
+        elif Parameters.optimizer == Optimizers.SGD:
+            optimizer = optim.SGD(parameters, momentum = Parameters.momentum)
+
+        return optimizer

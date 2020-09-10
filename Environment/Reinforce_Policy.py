@@ -8,7 +8,7 @@ class Reinforce_Policy(nn.Module):
     def __init__(self, history):
         super(Reinforce_Policy, self).__init__()
 
-        self.model = nn.Sequential(*Parameters.layers) 
+        self.model = nn.Sequential(*(Parameters.layers.copy())).to(Parameters.device()) 
 
         self.history = history
 

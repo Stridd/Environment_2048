@@ -8,8 +8,9 @@ class Parameters:
     optimizer = Optimizers.ADAM
 
     lr = 0.001
-
-    episodes = 1000
+    momentum = 0.9
+    
+    episodes = 100
     board_size = 4
     
     input_size = 16

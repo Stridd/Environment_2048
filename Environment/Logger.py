@@ -45,9 +45,9 @@ class Logger():
         self.experiment_info_format = '| Episode %5s |'
         self.experiment_info_format += 'Length: %-10s|'
         self.experiment_info_format += 'Loss: %10.2f|'
-        self.experiment_info_format += 'Min Reward: %-10s|'
-        self.experiment_info_format += 'Max Reward: %-10s|'
-        self.experiment_info_format += 'Total Reward: %-10s|'
+        self.experiment_info_format += 'Min Reward: %-10.2f|'
+        self.experiment_info_format += 'Max Reward: %-10.2f|'
+        self.experiment_info_format += 'Total Reward: %-10.2f|'
         self.experiment_info_format += 'Max cell: %-10s|'
         self.experiment_info_format += 'Max cell count: %-3s|'
 
