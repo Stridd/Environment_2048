@@ -1,4 +1,4 @@
-from Utility import Utility
+from DataUtility import DataUtility
 
 class Data_Helper():
     def __init__(self):
@@ -9,7 +9,7 @@ class Data_Helper():
         self.max_reward = reward if self.max_reward is None else max(reward, self.max_reward) 
 
     def store_max_cell_statistics(self):
-        self.max_cell, self.max_cell_count = Utility.get_max_cell_value_and_count_from_board(self.game_board)
+        self.max_cell, self.max_cell_count = DataUtility.get_max_cell_value_and_count_from_board(self.game_board)
 
     def clear_current_data(self):
         self.steps = 0
@@ -20,4 +20,4 @@ class Data_Helper():
         self.loss              = None
         self.max_cell          = None
         self.max_cell_count    = None
-        self.total_reward     = None 
+        self.total_reward      = None 

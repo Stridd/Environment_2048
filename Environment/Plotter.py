@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from Utility import Utility
+from DataUtility import DataUtility
 
 class Plotter():
     def __init__(self, folder_for_plots, time_of_experiment):
@@ -20,7 +21,7 @@ class Plotter():
 
         reward_history = history.episode_rewards
         
-        moving_average = Utility.calculate_moving_average_for(reward_history)
+        moving_average = DataUtility.calculate_moving_average_for(reward_history)
 
         title  = 'Reward evolution'
         ylabel = 'Moving average of reward'
@@ -36,7 +37,7 @@ class Plotter():
 
         episode_lengths = history.episode_lengths
 
-        moving_average = Utility.calculate_moving_average_for(episode_lengths)
+        moving_average = DataUtility.calculate_moving_average_for(episode_lengths)
 
         title  = 'Episode length evolution'
         ylabel = 'Moving average of length'
@@ -52,7 +53,7 @@ class Plotter():
 
         losses = history.losses
 
-        moving_average = Utility.calculate_moving_average_for(losses)
+        moving_average = DataUtility.calculate_moving_average_for(losses)
 
         title  = 'Loss evolution'
         ylabel = 'Loss'
@@ -66,7 +67,7 @@ class Plotter():
 
     def plot_max_cell_distribution_from_history(self, history):
 
-        cells_and_occurences = Utility.build_and_sort_max_cell_distribution_from_history(history)
+        cells_and_occurences = DataUtility.build_and_sort_max_cell_distribution_from_history(history)
     
         # Taken from here: https://stackoverflow.com/questions/16010869/plot-a-bar-using-matplotlib-using-a-dictionary
         plt.figure() 

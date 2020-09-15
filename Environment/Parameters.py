@@ -10,7 +10,7 @@ class Parameters:
     lr = 0.001
     momentum = 0.9
     
-    episodes = 100
+    episodes = 10
     board_size = 4
     
     input_size = 16
@@ -32,3 +32,6 @@ class Parameters:
         nn.ReLU(),
         nn.Linear(128, output_size)
     ]
+
+    load_model = False 
+    model_path = r'D:\Projects\1. Environment_2048\Environment\Logs\14-09-2020_06-46-00\model.pt'

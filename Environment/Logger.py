@@ -1,12 +1,11 @@
 from Parameters import Parameters
 from Utility import Utility
+from DataUtility import DataUtility
 import glob
 import os
 import json
 
 from datetime import datetime
-
-
 
 class Logger():
     def __init__(self, logs_path, time_of_experiment):
@@ -109,7 +108,7 @@ class Logger():
 
     def save_parameters_to_json(self):
         parameters_file_path = self.path_to_folder + 'Parameters.json'
-        json_content = Utility.get_parameters_class_as_json()
+        json_content = DataUtility.get_parameters_class_as_json()
 
         with open(parameters_file_path, 'w+') as fp:
             json.dump(json_content, fp,  sort_keys=True, indent=4)

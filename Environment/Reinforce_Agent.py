@@ -4,6 +4,8 @@ from Environment_2048 import Environment_2048
 from History import History
 from Logger  import Logger 
 from Utility import Utility
+from RewardUtility import RewardUtility
+from PreprocessingUtility import PreprocessingUtility
 from Parameters import Parameters
 from Plotter import Plotter
 from Data_Helper import Data_Helper
@@ -19,10 +21,10 @@ from datetime import datetime
 class Reinforce_Agent():
     def __init__(self):
 
-        time_of_experiment = Utility.get_time_of_experiment()
+        self.time_of_experiment = Utility.get_time_of_experiment()
         
-        self.setup_logger(time_of_experiment)
-        self.setup_plotter(time_of_experiment)
+        self.setup_logger(self.time_of_experiment)
+        self.setup_plotter(self.time_of_experiment)
 
         self.history = History()
 
@@ -33,7 +35,12 @@ class Reinforce_Agent():
         self.gamma  = Parameters.gamma
 
         self.optimizer = Utility.get_optimizer_for_parameters(self.policy.parameters())
-        self.data_helper = Data_Helper() 
+        self.data_helper = Data_Helper()
+
+        self.trained_for = 0
+
+        if Parameters.load_model == True:
+            self.load_model_from(Parameters.model_path)
 
     def setup_logger(self, time_of_experiment):
         current_directory = os.path.dirname(__file__)
@@ -80,6 +87,8 @@ class Reinforce_Agent():
             self.store_and_write_data()
             self.clean_up_episode_history()
         self.logger.save_parameters_to_json()
+        self.save_model()
+
 
     def play_until_end_of_game(self):
         
@@ -111,14 +120,14 @@ class Reinforce_Agent():
         reward = 0
 
         # Apply preprocessing and other operations
-        state = Utility.transform_board_into_state(data_helper.game_board)
+        state = PreprocessingUtility.transform_board_into_state(data_helper.game_board)
 
         # Need available_actions to rule out invalid actions
         action = self.policy.get_action(state, data_helper.available_actions)
 
         self.game.takeAction(action)
 
-        reward = Utility.get_reward_from_dictionary(self.game.getMergedCellsAfterMove())
+        reward = RewardUtility.get_reward(self.game.getMergedCellsAfterMove())
         # Small preprocessing
         # Store min and max reward for statistics
         data_helper.store_min_max_reward(reward)
@@ -149,6 +158,7 @@ class Reinforce_Agent():
         self.history.clear_current_episode_data()
 
         self.history.increment_episode()
+        self.trained_for += 1
 
         if self.history.current_episode < Parameters.episodes:
             self.logger.open_new_log_for_current_episode(self.history)
@@ -157,3 +167,21 @@ class Reinforce_Agent():
 
     def plot_statistics_to_files(self):
         self.plotter.generate_and_save_plots_from_history(self.history)
+
+    def save_model(self):
+
+        current_directory = os.path.dirname(__file__)
+        path = current_directory + '\\' + 'Logs' + '\\' + self.time_of_experiment + '\\' + 'model.pt'
+
+        torch.save({
+            'trained_for'         : self.trained_for,
+            'model_state_dict'    : self.policy.model.state_dict(),
+            'optimizer_state_dict': self.optimizer.state_dict(),
+            }, path)
+
+    def load_model_from(self, path):
+        checkpoint = torch.load(path)
+        self.policy.model.load_state_dict(checkpoint['model_state_dict'])
+        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        self.trained_for = checkpoint['trained_for']
+    
