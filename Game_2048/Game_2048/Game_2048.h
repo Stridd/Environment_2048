@@ -13,8 +13,6 @@ class Game_2048
 {
 	private:
 
-		static int currentEpisode;
-
 		bool isGameFinished;
 
 		int boardSize;

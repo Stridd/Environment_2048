@@ -4,6 +4,8 @@ from DataUtility import DataUtility
 import glob
 import os
 import json
+import pandas as pd
+import numpy as np
 
 from datetime import datetime
 
@@ -24,8 +26,8 @@ class Logger():
         Utility.make_folder_if_not_exist(self.path_to_episode_logs)
 
         # When it's initialized the first episode is the 0 episode
-        log_file_name = self.path_to_episode_logs + 'episode_' + '%s' + '.txt'
-        self.log_for_current_episode = open(log_file_name % 0, 'a+')
+        self.log_name_for_current_episode = self.path_to_episode_logs + 'episode_0' + '.csv'
+        self.csv_for_current_episode = pd.DataFrame(columns=['State','Reward','Action','Entropy'])
 
         self.experiment_info_path = self.path_to_folder + Parameters.experiment_data_file_name
 
@@ -56,11 +58,11 @@ class Logger():
     
     def open_new_log_for_current_episode(self, agent_history):
         current_episode = agent_history.current_episode
-        log_file_name = self.path_to_episode_logs + 'episode_' + '%s' + '.txt'
-        self.log_for_current_episode = open(log_file_name % current_episode, 'a+')
+        self.log_name_for_current_episode = self.path_to_episode_logs + 'episode_' + str(current_episode) + '.csv'
+        self.csv_for_current_episode = pd.DataFrame(columns=['State','Reward','Action','Entropy'])
 
     def close_log_for_current_episode(self):
-        self.log_for_current_episode.close()
+        self.csv_for_current_episode.to_csv(self.log_name_for_current_episode)
 
     def write_experiment_info_using_history(self, agent_history):
 
@@ -88,6 +90,16 @@ class Logger():
         experiment_info_file.write('\n')
         experiment_info_file.close()
 
+    def pretty_write_states_in_csv(self, states_per_episode):
+
+        for i in range(len(states_per_episode)):
+            self.csv_for_current_episode.at[i + 1,'State'] = ""
+            number_of_rows = len(states_per_episode[i])
+            for j in range(number_of_rows): 
+                self.csv_for_current_episode.at[i+1,'State'] += str(states_per_episode[i][j])
+                if j != number_of_rows - 1:
+                    self.csv_for_current_episode.at[i+1,'State'] += '\r\n'
+
     def write_data_for_current_episode_using_history(self, agent_history):
 
         state_evolution_current_episode         = agent_history.state_evolution_current_episode
@@ -97,14 +109,11 @@ class Logger():
         entropy                                 = agent_history.entropy
         current_episode                         = agent_history.current_episode
  
-        for i in range(len(entropy)):
-            self.log_for_current_episode.write(self.data_per_episode_format
-                                    % (state_evolution_current_episode[i],
-                                        ['%.3f' % output for output in network_output[i]], 
-                                        entropy[i], 
-                                        actions_current_episode[i], 
-                                        rewards_current_episode[i]))
-            self.log_for_current_episode.write('\n')
+        self.pretty_write_states_in_csv(state_evolution_current_episode)
+        self.csv_for_current_episode.loc[:, 'Reward'] = rewards_current_episode
+        self.csv_for_current_episode.loc[:, 'Action'] = actions_current_episode
+        #self.csv_for_current_episode.loc[:, 3] = network_output
+        self.csv_for_current_episode.loc[:, 'Entropy'] = entropy
 
     def save_parameters_to_json(self):
         parameters_file_path = self.path_to_folder + 'Parameters.json'

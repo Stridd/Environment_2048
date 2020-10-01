@@ -1,7 +1,6 @@
 #include "Game_2048.h"
 #include <iostream>
 
-int Game_2048::currentEpisode = 0;
 
 Game_2048::Game_2048()
 {
@@ -10,7 +9,6 @@ Game_2048::Game_2048()
 	this->board = boardType
 		(boardSize, std::vector<int>(boardSize, 0));
 
-	currentEpisode = 0;
 }
 
 Game_2048::Game_2048(const unsigned int& boardSize)
@@ -19,7 +17,6 @@ Game_2048::Game_2048(const unsigned int& boardSize)
 	this->board = boardType
 					  (boardSize, std::vector<int>(boardSize, 0));
 
-	currentEpisode = 0;
 	isGameFinished = false;
 	RNG.seed(std::random_device()());
 	addTwoTiles();
@@ -29,7 +26,6 @@ Game_2048::Game_2048(const unsigned int& boardSize, boardType& board)
 {
 	this->boardSize = boardSize;
 	this->board = board;
-	currentEpisode = 0;
 	isGameFinished = false;
 
 	// We want to set the game as finished based on the input board
@@ -42,8 +38,6 @@ void Game_2048::resetGame()
 {
 	resetBoard();
 	isGameFinished = false;
-	currentEpisode += 1;
-
 }
 
 void Game_2048::printBoard()

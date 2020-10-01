@@ -1,28 +1,37 @@
 from Enums import RewardFunctions, Optimizers
 
+import torch
 import torch.nn as nn
 
 class Parameters:
-    gamma = 0.9
+
+    # Learning hyperparameters
+    gamma = 0.99
+    lr = 0.01
+    momentum = 0.9
     
     optimizer = Optimizers.ADAM
 
-    lr = 0.001
-    momentum = 0.9
-    
-    episodes = 10
+    episodes = 5
     board_size = 4
     
     input_size = 16
     output_size = 4
     
-    device = 'cuda'
+    device = 'cpu'
 
     experiment_data_file_name = 'experiment_data.txt'
-    logs_folder_name = 'Logs'
-    plots_folder_name = 'Plots'
+    logs_folder_name     = 'Logs'
+    plots_folder_name    = 'Plots'
+    profiles_folder_name = 'Profiles'
 
     reward_type = RewardFunctions.cells_merged
+
+    seed = 0
+
+    # Must set manual seed before layer initialization
+    if seed is not None:
+        torch.manual_seed(0)
 
     layers = \
     [
@@ -34,4 +43,4 @@ class Parameters:
     ]
 
     load_model = False 
-    model_path = r'D:\Projects\1. Environment_2048\Environment\Logs\14-09-2020_06-46-00\model.pt'
+    model_path = r'D:\Projects\1. Environment_2048\Environment\Logs\16-09-2020_06-51-30\model.pt'

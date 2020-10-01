@@ -10,16 +10,24 @@ from Parameters import Parameters
 from Plotter import Plotter
 from Data_Helper import Data_Helper
 
-
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-import os 
+import os
+import random 
 
 from datetime import datetime
 
 class Reinforce_Agent():
     def __init__(self):
+
+        self.game =  Environment_2048(4)
+     
+        if Parameters.seed is not None:
+            self.set_seed(Parameters.seed)
+
+        # Also reset the game to take into account the new seed
+        self.game.resetGame()
 
         self.time_of_experiment = Utility.get_time_of_experiment()
         
@@ -27,20 +35,22 @@ class Reinforce_Agent():
         self.setup_plotter(self.time_of_experiment)
 
         self.history = History()
+        self.data_helper = Data_Helper()
 
         self.policy = Reinforce_Policy(self.history).to(Parameters.device)
-
-        self.game =  Environment_2048(4)
-
-        self.gamma  = Parameters.gamma
-
+        self.policy.train()
         self.optimizer = Utility.get_optimizer_for_parameters(self.policy.parameters())
-        self.data_helper = Data_Helper()
 
         self.trained_for = 0
 
         if Parameters.load_model == True:
             self.load_model_from(Parameters.model_path)
+
+    def set_seed(self, seed):
+        torch.manual_seed(seed)
+        random.seed(seed)
+        np.random.seed(seed)
+        self.game.setSeed(seed)
 
     def setup_logger(self, time_of_experiment):
         current_directory = os.path.dirname(__file__)
@@ -51,8 +61,9 @@ class Reinforce_Agent():
         folder_to_save_plots = os.path.dirname(__file__) + '\\' + Parameters.plots_folder_name
         # Use the logger time of experiment to save figures to corresponding folder
         self.plotter = Plotter(folder_to_save_plots, time_of_experiment)
-
+        
     def train(self):
+    
         episode_length = len(self.policy.rewards)
         returns = np.empty(episode_length, dtype = np.float32)
 
@@ -60,7 +71,7 @@ class Reinforce_Agent():
         future_returns = 0.0 
 
         for t in reversed(range(episode_length)):
-            future_returns = self.policy.rewards[t] + self.gamma * future_returns
+            future_returns = self.policy.rewards[t] + Parameters.gamma * future_returns
             returns[t] = future_returns
 
         #normalized_returns = (returns - np.mean(returns)) / (np.std(returns) + 1e-10)
@@ -81,14 +92,14 @@ class Reinforce_Agent():
     def learn(self):
 
         for episode in range(Parameters.episodes):
-            print('Processing episode {}'.format(episode))
+            #print('Processing episode {}'.format(episode))
 
             self.play_until_end_of_game()
             self.store_and_write_data()
+
             self.clean_up_episode_history()
         self.logger.save_parameters_to_json()
         self.save_model()
-
 
     def play_until_end_of_game(self):
         
@@ -107,7 +118,6 @@ class Reinforce_Agent():
                 if len(available_actions) == 0:
                     self.game.setFinishedIfNoActionIsAvailable()
                 else:
-                    
                     self.data_helper.game_board        = game_board
                     self.data_helper.available_actions = available_actions
 
@@ -115,7 +125,6 @@ class Reinforce_Agent():
 
                 game_is_done = self.game.isFinished()
     
-
     def perform_action_and_store_data(self, data_helper):
         reward = 0
 
@@ -139,7 +148,7 @@ class Reinforce_Agent():
 
         # Increase the steps taken to see episode length
         data_helper.steps += 1
-
+    
     def store_and_write_data(self):
         self.data_helper.loss = self.train()
         self.data_helper.game_board = self.game.getBoard()
@@ -184,4 +193,3 @@ class Reinforce_Agent():
         self.policy.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self.trained_for = checkpoint['trained_for']
-    
