@@ -15,6 +15,7 @@ class Plotter():
         self.plot_ma_of_reward_from_history(history)
         self.plot_ma_of_episode_length_from_history(history)
         self.plot_ma_of_loss_from_history(history)
+        self.plot_ma_of_max_cell_from_history(history)
         self.plot_max_cell_distribution_from_history(history)
 
     def plot_ma_of_reward_from_history(self, history):
@@ -58,7 +59,7 @@ class Plotter():
         title  = 'Loss evolution'
         ylabel = 'Loss'
         xlabel = 'Episode'
-        data = losses
+        data = moving_average
         file_name = 'loss.png'
 
         concatenated_data = (xlabel, ylabel, title, file_name, data)
@@ -74,6 +75,19 @@ class Plotter():
         plt.bar(*zip(*cells_and_occurences.items()))
         plt.title('Max cell distribution')
         plt.savefig(self.folder_for_plots + '\\' + 'cell_distribution.png', bbox_inches='tight')
+
+    def plot_ma_of_max_cell_from_history(self, history):
+        max_cells = history.max_cell
+        moving_average = DataUtility.calculate_moving_average_for(max_cells)
+
+        title  = 'Max cell evolution'
+        ylabel = 'Moving average of max cell'
+        xlabel = 'Episode'
+        data = moving_average
+        file_name = 'max_cells.png'
+
+        concatenated_data = (xlabel, ylabel, title, file_name, data)
+        self.plot_and_save_figure(concatenated_data)
 
     def plot_and_save_figure(self, data):
 

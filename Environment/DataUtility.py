@@ -9,10 +9,13 @@ class DataUtility(ABC):
     def calculate_moving_average_for(data):
         moving_average_coefficient = len(data) // 10
 
-        # Decided to use convolution. Reason is here: https://stackoverflow.com/questions/13728392/moving-average-or-running-mean
-        moving_average = np.convolve(data, 
-                                    np.ones((moving_average_coefficient,))/moving_average_coefficient, 
-                                    mode='valid')
+        if moving_average_coefficient != 0:
+            # Decided to use convolution. Reason is here: https://stackoverflow.com/questions/13728392/moving-average-or-running-mean
+            moving_average = np.convolve(data, 
+                                        np.ones((moving_average_coefficient,))/moving_average_coefficient, 
+                                        mode='valid')
+        else:
+            moving_average = data
 
         return moving_average
 

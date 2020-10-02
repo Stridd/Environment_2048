@@ -67,6 +67,8 @@ class Reinforce_Agent():
         episode_length = len(self.policy.rewards)
         returns = np.empty(episode_length, dtype = np.float32)
 
+        eps = np.finfo(np.float32).eps.item()
+
         # Initialize this for better processing of future rewards
         future_returns = 0.0 
 
@@ -74,8 +76,8 @@ class Reinforce_Agent():
             future_returns = self.policy.rewards[t] + Parameters.gamma * future_returns
             returns[t] = future_returns
 
-        #normalized_returns = (returns - np.mean(returns)) / (np.std(returns) + 1e-10)
-        normalized_returns = returns - np.mean(returns)
+        normalized_returns = (returns - np.mean(returns)) / (np.std(returns) + eps)
+
         normalized_returns = torch.tensor(normalized_returns).to(Parameters.device)
         log_probabilities = torch.stack(self.policy.log_probablities).flatten().to(Parameters.device)
 
@@ -92,7 +94,6 @@ class Reinforce_Agent():
     def learn(self):
 
         for episode in range(Parameters.episodes):
-            #print('Processing episode {}'.format(episode))
 
             self.play_until_end_of_game()
             self.store_and_write_data()

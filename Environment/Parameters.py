@@ -7,12 +7,12 @@ class Parameters:
 
     # Learning hyperparameters
     gamma = 0.99
-    lr = 0.01
+    lr = 0.001
     momentum = 0.9
     
     optimizer = Optimizers.ADAM
 
-    episodes = 5
+    episodes = 10000
     board_size = 4
     
     input_size = 16
@@ -27,11 +27,11 @@ class Parameters:
 
     reward_type = RewardFunctions.cells_merged
 
-    seed = 0
+    seed = None
 
     # Must set manual seed before layer initialization
     if seed is not None:
-        torch.manual_seed(0)
+        torch.manual_seed(seed)
 
     layers = \
     [

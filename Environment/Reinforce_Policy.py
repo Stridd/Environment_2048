@@ -10,16 +10,7 @@ class Reinforce_Policy(nn.Module):
     def __init__(self, history):
         super(Reinforce_Policy, self).__init__()
 
-        layers = \
-        [
-            nn.Linear(16, 64),
-            nn.ReLU(),
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Linear(32, 4)
-        ]
-
-        self.model = nn.Sequential(*layers).to(Parameters.device) 
+        self.model = nn.Sequential(*Parameters.layers.copy()).to(Parameters.device) 
 
         self.history = history
 
@@ -75,7 +66,7 @@ class Reinforce_Policy(nn.Module):
         # Store it
         self.log_probablities.append(log_probability)
 
-        return action.detach().item()
+        return action.item()
 
     def store_reward(self, reward):
         self.rewards.append(reward)

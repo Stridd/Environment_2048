@@ -1,26 +1,23 @@
 from Reinforce_Agent import Reinforce_Agent
 from timeit import default_timer as timer
 from Utility import Utility
-import pandas as pd
 
+#Source: https://www.quora.com/How-can-you-convert-milliseconds-in-a-format-with-days-hours-minutes-and-seconds-in-Python
+
+def pretty_print_time(seconds):
+
+    minutes, seconds = divmod(seconds, 60) 
+    hours, minutes = divmod(minutes, 60) 	
+    days, hours = divmod(hours, 24)  
+    print('Execution time: | Hours:{:.0f} | Minutes:{:.0f} | Seconds:{:.0f} |'.format(hours, minutes, seconds)) 
 
 def create_and_train_reinforce_agent():
     agent = Reinforce_Agent()
     start = timer()
-    agent.learn()
+    Utility.profile_function(agent.learn)
     end = timer()
-    print('Execution time: {}'.format(end - start))
-    #agent.plot_statistics_to_files()
+    pretty_print_time(end-start)
+    agent.plot_statistics_to_files()
 
 if __name__ == '__main__':
     create_and_train_reinforce_agent()
-    '''
-    data = [ [[1,1,1,1],[2,2,2,2],[3,3,3,3],[4,4,4,4]], [[1,1,1,1],[2,2,2,2],[3,3,3,3],[4,4,4,4]], [[1,1,1,1],[2,2,2,2],[3,3,3,3],[4,4,4,4]], [[1,1,1,1],[2,2,2,2],[3,3,3,3],[4,4,4,4]]]
-    pd = pd.DataFrame(columns = ['State'])
-    pd.at[1,'State'] = ""
-    for i in range(len(data)):
-        for row in data[i]: 
-            pd.at[i+1,'State'] += str(row)
-            pd.at[i+1,'State'] += '\n'
-    pd.to_csv(r'D:\Projects\1. Environment_2048\Environment\test.csv')
-    '''
