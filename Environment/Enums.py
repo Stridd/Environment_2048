@@ -4,8 +4,18 @@ class RewardFunctions(enum.Enum):
     distance_to_2048      = 1
     high_cell_high_reward = 2
     
-
 class Optimizers(enum.Enum):
-    ADAM    = 1
-    SGD     = 2
-    RMSPROP = 3
+    ADAM     = 0
+    SGD      = 1
+    RMSPROP  = 2
+    ADAGRAD  = 3
+    ADADELTA = 4
+
+class WeightInit(enum.Enum):
+    UNIFORM         = 0
+    NORMAL          = 1
+    EYE             = 2
+    XAVIER_UNIFORM  = 3
+    XAVIER_NORMAL   = 4
+    KAIMING_UNIFORM = 5
+    KAIMING_NORMAL  = 6

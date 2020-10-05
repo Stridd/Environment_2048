@@ -1,4 +1,4 @@
-from Enums import RewardFunctions, Optimizers
+from Enums import RewardFunctions, Optimizers, WeightInit
 
 import torch
 import torch.nn as nn
@@ -10,9 +10,9 @@ class Parameters:
     lr = 0.001
     momentum = 0.9
     
-    optimizer = Optimizers.ADAM
+    optimizer = Optimizers.SGD
 
-    episodes = 10000
+    episodes = 1000
     board_size = 4
     
     input_size = 16
@@ -32,6 +32,8 @@ class Parameters:
     # Must set manual seed before layer initialization
     if seed is not None:
         torch.manual_seed(seed)
+
+    weight_init = WeightInit.UNIFORM
 
     layers = \
     [

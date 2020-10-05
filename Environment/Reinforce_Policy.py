@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import numpy as np
 from torch.distributions import Categorical
 from Parameters import Parameters
-import line_profiler
+from Utility import Utility
 
 class Reinforce_Policy(nn.Module):
     def __init__(self, history):
@@ -12,10 +12,16 @@ class Reinforce_Policy(nn.Module):
 
         self.model = nn.Sequential(*Parameters.layers.copy()).to(Parameters.device) 
 
+        if Parameters.weight_init != None:
+            self.initialize_weights()
+
         self.history = history
 
         self.reset_policy()
         self.train()
+
+    def initialize_weights(self):
+        self.model.apply(Utility.get_initialization_function)
 
     def reset_policy(self):
         self.log_probablities = []

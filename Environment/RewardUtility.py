@@ -23,7 +23,7 @@ class RewardUtility(ABC):
     def build_func_map():
         RewardUtility.func_map = {}
         RewardUtility.func_map[RewardFunctions.cells_merged]          = RewardUtility.get_reward_from_dictionary
-        RewardUtility.func_map[RewardFunctions.distance_to_2048]      = RewardUtility.get_reward_by_distance_to_target_cell
+        RewardUtility.func_map[RewardFunctions.distance_to_2048]      = RewardUtility.get_reward_by_distance_to_2048
         RewardUtility.func_map[RewardFunctions.high_cell_high_reward] = RewardUtility.get_high_cell_high_reward
 
     @staticmethod
@@ -35,9 +35,27 @@ class RewardUtility(ABC):
         return reward 
 
     @staticmethod
-    def get_reward_by_distance_to_target_cell(cells_dictionary, target_cell):
-        raise NotImplementedError
+    def get_reward_by_distance_to_2048(cells_dictionary):
+
+        target_cell = 2048
+        reward = -2048
+
+        if cells_dictionary != {}:
+
+            keys = cells_dictionary.keys()
+
+            max_value_cells_merged = max(keys)
+
+            reward =  max_value_cells_merged - target_cell
+
+        return reward
 
     @staticmethod
     def get_high_cell_high_reward(cells_dictionary):
-        raise NotImplementedError
+
+        reward = 0
+        if cells_dictionary != {}:
+            keys = cells_dictionary.keys()
+            reward = max(keys)
+
+        return reward
