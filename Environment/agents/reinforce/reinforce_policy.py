@@ -2,9 +2,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+
 from torch.distributions import Categorical
-from Parameters import Parameters
-from Utility import Utility
+
+from parameters import Parameters
+from utilities import Utility
 
 class Reinforce_Policy(nn.Module):
     def __init__(self, history):

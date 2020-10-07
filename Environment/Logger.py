@@ -1,6 +1,5 @@
-from Parameters import Parameters
-from Utility import Utility
-from DataUtility import DataUtility
+from parameters import Parameters
+from utilities import Utility, DataUtility
 
 import glob
 import os
@@ -10,10 +9,12 @@ import numpy as np
 from datetime import datetime
 
 class Logger():
-    def __init__(self, logs_path, time_of_experiment):
+    def __init__(self, time_of_experiment):
         
+        logger_location = os.path.dirname(__file__)
+
         logs_folder_name = Parameters.logs_folder_name
-        logs_folder_path = logs_path + '\\' + logs_folder_name
+        logs_folder_path = logger_location + '\\' + logs_folder_name
 
         Utility.make_folder_if_not_exist(logs_folder_path)
 
@@ -107,6 +108,8 @@ class Logger():
                                         actions_current_episode[i], 
                                         rewards_current_episode[i]))
             self.log_for_current_episode.write('\n')
+
+        blabla = 'aaa'
 
     def save_parameters_to_json(self):
         parameters_file_path = self.path_to_folder + 'Parameters.json'

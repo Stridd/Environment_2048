@@ -1,4 +1,4 @@
-from Enums import RewardFunctions, Optimizers, WeightInit
+from enums import RewardFunctions, Optimizers, WeightInit
 
 import torch
 import torch.nn as nn
@@ -12,7 +12,7 @@ class Parameters:
     
     optimizer = Optimizers.SGD
 
-    episodes = 1000
+    episodes = 10
     board_size = 4
     
     input_size = 16
@@ -46,3 +46,5 @@ class Parameters:
 
     load_model = False 
     model_path = r'D:\Projects\1. Environment_2048\Environment\Logs\16-09-2020_06-51-30\model.pt'
+
+    profile = False

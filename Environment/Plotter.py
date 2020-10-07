@@ -1,9 +1,14 @@
+from utilities import Utility, DataUtility
+from parameters import Parameters
 import matplotlib.pyplot as plt
-from Utility import Utility
-from DataUtility import DataUtility
+import os
 
 class Plotter():
-    def __init__(self, folder_for_plots, time_of_experiment):
+    def __init__(self, time_of_experiment):
+
+        plotter_directory = os.path.dirname(__file__)
+
+        folder_for_plots = plotter_directory + '\\' + Parameters.plots_folder_name
 
         Utility.make_folder_if_not_exist(folder_for_plots)
         

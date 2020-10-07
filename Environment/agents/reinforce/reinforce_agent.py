@@ -1,15 +1,3 @@
-from Reinforce_Policy import Reinforce_Policy
-from Environment_2048 import Environment_2048
-
-from History import History
-from Logger  import Logger 
-from Utility import Utility
-from RewardUtility import RewardUtility
-from PreprocessingUtility import PreprocessingUtility
-from Parameters import Parameters
-from Plotter import Plotter
-from Data_Helper import Data_Helper
-
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
@@ -17,6 +5,17 @@ import os
 import random 
 
 from datetime import datetime
+
+from .reinforce_policy import Reinforce_Policy
+
+from Environment_2048 import Environment_2048
+
+from history     import History
+from data_helper import Data_Helper
+from logger      import Logger
+from utilities   import Utility, RewardUtility, PreprocessingUtility
+from parameters  import Parameters
+from plotter     import Plotter
 
 class Reinforce_Agent():
     def __init__(self):
@@ -29,10 +28,12 @@ class Reinforce_Agent():
         # Also reset the game to take into account the new seed
         self.game.resetGame()
 
-        self.time_of_experiment = Utility.get_time_of_experiment()
+        time_of_experiment = Utility.get_time_of_experiment()
         
-        self.setup_logger(self.time_of_experiment)
-        self.setup_plotter(self.time_of_experiment)
+        self.logger = Logger(time_of_experiment)
+        # Use the logger time of experiment to save figures to corresponding folder
+        self.plotter = Plotter(time_of_experiment)
+        
 
         self.history = History()
         self.data_helper = Data_Helper()
@@ -51,17 +52,8 @@ class Reinforce_Agent():
         random.seed(seed)
         np.random.seed(seed)
         self.game.setSeed(seed)
-
-    def setup_logger(self, time_of_experiment):
-        current_directory = os.path.dirname(__file__)
-
-        self.logger = Logger(current_directory, time_of_experiment)
-
-    def setup_plotter(self, time_of_experiment):
-        folder_to_save_plots = os.path.dirname(__file__) + '\\' + Parameters.plots_folder_name
-        # Use the logger time of experiment to save figures to corresponding folder
-        self.plotter = Plotter(folder_to_save_plots, time_of_experiment)
         
+
     def train(self):
     
         episode_length = len(self.policy.rewards)
@@ -94,7 +86,6 @@ class Reinforce_Agent():
     def learn(self):
 
         for episode in range(Parameters.episodes):
-
             self.play_until_end_of_game()
             self.store_and_write_data()
 

@@ -1,4 +1,4 @@
-from DataUtility import DataUtility
+from utilities import DataUtility
 
 class Data_Helper():
     def __init__(self):
