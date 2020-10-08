@@ -86,7 +86,7 @@ class Utility(ABC):
         sortby = SortKey.TIME
         ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
 
-        current_directory = os.path.dirname(__file__)
+        current_directory = Utility.get_absolute_path_from_file_name(__file__)
 
         profiler_folder = current_directory + '\\' + Parameters.profiles_folder_name
 
@@ -118,6 +118,10 @@ class Utility(ABC):
             weight_init_function = weight_init_map[Parameters.weight_init]
             weight_init_function(nn_layer.weight)
             nn_layer.bias.data.fill_(0.01)
+
+    @staticmethod
+    def get_absolute_path_from_file_name(file_name):
+        return os.path.dirname(file_name)
 
 class DataUtility(ABC):
 
@@ -180,6 +184,7 @@ class DataUtility(ABC):
         json_content['Output size']     = Parameters.output_size
         json_content['Optimizer']       = str(Optimizers(Parameters.optimizer).name)
         json_content['Reward function'] = str(RewardFunctions(Parameters.reward_type).name)
+        json_content['Weight initialization'] = str(WeightInit(Parameters.weight_init).name)
         json_content['Model']           = repr(Parameters.layers)
         return json_content
 

@@ -1,7 +1,6 @@
 from parameters import Parameters
 from utilities import Utility, DataUtility
 
-import glob
 import os
 import json
 import numpy as np
@@ -11,7 +10,7 @@ from datetime import datetime
 class Logger():
     def __init__(self, time_of_experiment):
         
-        logger_location = os.path.dirname(__file__)
+        logger_location = Utility.get_absolute_path_from_file_name(__file__)
 
         logs_folder_name = Parameters.logs_folder_name
         logs_folder_path = logger_location + '\\' + logs_folder_name
@@ -109,7 +108,6 @@ class Logger():
                                         rewards_current_episode[i]))
             self.log_for_current_episode.write('\n')
 
-        blabla = 'aaa'
 
     def save_parameters_to_json(self):
         parameters_file_path = self.path_to_folder + 'Parameters.json'

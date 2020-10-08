@@ -1,9 +1,7 @@
 import numpy as np
 import torch
-import matplotlib.pyplot as plt
-import os
-import random 
-
+import random
+from pathlib import Path
 from datetime import datetime
 
 from .reinforce_policy import Reinforce_Policy
@@ -28,13 +26,12 @@ class Reinforce_Agent():
         # Also reset the game to take into account the new seed
         self.game.resetGame()
 
-        time_of_experiment = Utility.get_time_of_experiment()
+        self.time_of_experiment = Utility.get_time_of_experiment()
         
-        self.logger = Logger(time_of_experiment)
+        self.logger = Logger(self.time_of_experiment)
         # Use the logger time of experiment to save figures to corresponding folder
-        self.plotter = Plotter(time_of_experiment)
+        self.plotter = Plotter(self.time_of_experiment)
         
-
         self.history = History()
         self.data_helper = Data_Helper()
 
@@ -170,9 +167,11 @@ class Reinforce_Agent():
         self.plotter.generate_and_save_plots_from_history(self.history)
 
     def save_model(self):
+        
+        current_directory = Utility.get_absolute_path_from_file_name(__file__)
 
-        current_directory = os.path.dirname(__file__)
-        path = current_directory + '\\' + 'Logs' + '\\' + self.time_of_experiment + '\\' + 'model.pt'
+        logs_folder = str(Path(current_directory).parents[1]) + '\\' + 'Logs'
+        path = logs_folder + '\\' + self.time_of_experiment + '\\' + 'model.pt'
 
         torch.save({
             'trained_for'         : self.trained_for,

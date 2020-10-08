@@ -18,7 +18,7 @@ def create_and_train_reinforce_agent():
 
     agent = Reinforce_Agent()
     start = timer()
-    #Utility.profile_function(agent.learn)
+    agent.learn()
     end = timer()
     pretty_print_time(end-start)
     agent.plot_statistics_to_files()

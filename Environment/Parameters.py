@@ -10,9 +10,9 @@ class Parameters:
     lr = 0.001
     momentum = 0.9
     
-    optimizer = Optimizers.SGD
+    
 
-    episodes = 10
+    episodes = 25000
     board_size = 4
     
     input_size = 16
@@ -25,15 +25,15 @@ class Parameters:
     plots_folder_name    = 'Plots'
     profiles_folder_name = 'Profiles'
 
+    optimizer = Optimizers.ADAM
     reward_type = RewardFunctions.cells_merged
+    weight_init = WeightInit.XAVIER_UNIFORM
 
     seed = None
 
     # Must set manual seed before layer initialization
     if seed is not None:
         torch.manual_seed(seed)
-
-    weight_init = WeightInit.UNIFORM
 
     layers = \
     [
