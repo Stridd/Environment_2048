@@ -10,15 +10,14 @@ class Parameters:
     lr = 0.001
     momentum = 0.9
     
-    
-
-    episodes = 25000
+    episodes = 10
     board_size = 4
     
     input_size = 16
     output_size = 4
-    
-    device = 'cpu'
+    # 'cpu' or 'cuda'
+    device = torch.device('cpu')
+    #device = 'cpu'
 
     experiment_data_file_name = 'experiment_data.txt'
     logs_folder_name     = 'Logs'
@@ -48,3 +47,8 @@ class Parameters:
     model_path = r'D:\Projects\1. Environment_2048\Environment\Logs\16-09-2020_06-51-30\model.pt'
 
     profile = False
+
+    # DDQN ONLY
+    max_memory_size = 15000
+    epsilon = 0.1
+    batch_size = 128

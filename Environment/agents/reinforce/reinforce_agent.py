@@ -18,7 +18,7 @@ from plotter     import Plotter
 class Reinforce_Agent():
     def __init__(self):
 
-        self.game =  Environment_2048(4)
+        self.game =  Environment_2048(Parameters.board_size)
      
         if Parameters.seed is not None:
             self.set_seed(Parameters.seed)
@@ -50,8 +50,7 @@ class Reinforce_Agent():
         np.random.seed(seed)
         self.game.setSeed(seed)
         
-
-    def train(self):
+    def learn(self):
     
         episode_length = len(self.policy.rewards)
         returns = np.empty(episode_length, dtype = np.float32)
@@ -80,7 +79,7 @@ class Reinforce_Agent():
 
         return loss
 
-    def learn(self):
+    def train(self):
 
         for episode in range(Parameters.episodes):
             self.play_until_end_of_game()
@@ -110,11 +109,11 @@ class Reinforce_Agent():
                     self.data_helper.game_board        = game_board
                     self.data_helper.available_actions = available_actions
 
-                    self.perform_action_and_store_data(self.data_helper)
+                    self.perform_action_and_store_data()
 
                 game_is_done = self.game.isFinished()
     
-    def perform_action_and_store_data(self, data_helper):
+    def perform_action_and_store_data(self):
         reward = 0
 
         # Apply preprocessing and other operations
@@ -128,7 +127,7 @@ class Reinforce_Agent():
         reward = RewardUtility.get_reward(self.game.getMergedCellsAfterMove())
         # Small preprocessing
         # Store min and max reward for statistics
-        data_helper.store_min_max_reward(reward)
+        self.data_helper.store_min_max_reward(reward)
 
         self.policy.store_reward(reward)
 
@@ -136,10 +135,10 @@ class Reinforce_Agent():
         self.history.store_state_action_reward_for_current_episode([data_helper.game_board, action, reward])
 
         # Increase the steps taken to see episode length
-        data_helper.steps += 1
+        self.data_helper.steps += 1
     
     def store_and_write_data(self):
-        self.data_helper.loss = self.train()
+        self.data_helper.loss = self.learn()
         self.data_helper.game_board = self.game.getBoard()
         self.data_helper.total_reward = np.sum(self.policy.rewards)
 
