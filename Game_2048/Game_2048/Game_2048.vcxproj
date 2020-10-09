@@ -138,11 +138,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="EpisodeInformation.h" />
     <ClInclude Include="Game_2048.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="EpisodeInformation.cpp" />
     <ClCompile Include="Game_2048.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>

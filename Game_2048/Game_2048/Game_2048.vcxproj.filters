@@ -18,18 +18,12 @@
     <ClInclude Include="Game_2048.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EpisodeInformation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game_2048.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EpisodeInformation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
