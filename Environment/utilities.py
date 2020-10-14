@@ -251,7 +251,7 @@ class PreprocessingUtility(ABC):
     @staticmethod
     def transform_board_into_state(game_board):
         state = PreprocessingUtility.process_state_using_log2_and_factor(game_board, 11)
-        state = np.array(state).reshape(1, -1)
+        state = np.array(state, dtype = np.float32).flatten()
         return state 
 
     @staticmethod

@@ -26,11 +26,15 @@ def create_and_train_reinforce_agent():
 
 def create_and_train_DDQN_agent():
     agent = DDQN()
+    start = timer()
     agent.train()
+    end = timer()
+    pretty_print_time(end-start)
 
 
 if __name__ == '__main__':
-    #create_and_train_reinforce_agent()
-    create_and_train_DDQN_agent()
+    create_and_train_reinforce_agent()
+    #create_and_train_DDQN_agent()
     
+
     

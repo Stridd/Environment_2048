@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import torch.nn.functional as F
 
 from .networks import Network, TargetNetwork
 
@@ -28,11 +29,11 @@ class DDQN():
 
         self.time_of_experiment = Utility.get_time_of_experiment()
         
-        self.logger = Logger(self.time_of_experiment)
-        self.plotter = Plotter(self.time_of_experiment)
+        #self.logger = Logger(self.time_of_experiment)
+        #self.plotter = Plotter(self.time_of_experiment)
         
-        self.history = History()
-        self.data_helper = Data_Helper()
+        #self.history = History()
+        #self.data_helper = Data_Helper()
 
         self.optimizer = Utility.get_optimizer_for_parameters(self.net.parameters())
 
@@ -41,6 +42,8 @@ class DDQN():
         for episode in range(Parameters.episodes):
             print('Processing episode: {}'.format(episode))
             self.play_until_end_of_game()
+            if episode % Parameters.update_every == 0:
+                self.target_net.load_state_dict(self.net.state_dict())
 
     def play_until_end_of_game(self):
         game_is_done = False
@@ -74,7 +77,6 @@ class DDQN():
             next_game_board = self.game.getBoard()
             next_state = PreprocessingUtility.transform_board_into_state(next_game_board)
 
-            # TO-DO: There is some inneficiency here, as we compute the available actions twice
             available_actions = self.game.getAvailableMoves(next_game_board, len(next_game_board))
 
             if len(available_actions) == 0:
@@ -91,6 +93,7 @@ class DDQN():
             #self.perform_action_and_store_data(self.data_helper)
 
             #game_is_done = self.game.isFinished()
+
 
     def get_action(self, state, available_actions):
         # Sample a random
@@ -110,7 +113,7 @@ class DDQN():
             predicted_values = self.net.forward(state)
 
             # Correct the values for the available actions
-            predicted_q_values = predicted_values[0].detach()
+            predicted_q_values = predicted_values.cpu().detach()
 
             q_values[available_actions] = predicted_q_values[available_actions]
 
@@ -126,4 +129,45 @@ class DDQN():
 
         experiences = self.replay_memory.sample_experiences(Parameters.batch_size)
 
-        states, actions, rewards, next_states, dones = [exp[0],exp[1],exp[2],exp[3],exp[4] for exp in experiences]
+        # Unpack the tuple into each separate list
+        states, actions, rewards, next_states, dones = zip(*experiences)
+
+        # Squeeze because at the moment we have (X,1,16)
+        states      = torch.tensor(states,       device = Parameters.device, dtype = torch.float32)
+        actions     = torch.tensor(actions,      device = Parameters.device, dtype = torch.long)
+        rewards     = torch.tensor(rewards,      device = Parameters.device, dtype = torch.float32)
+        next_states = torch.tensor(next_states,  device = Parameters.device, dtype = torch.float32)
+        dones       = torch.tensor(dones,        device = Parameters.device, dtype = torch.float32)
+
+
+        # Predict the action values for the Q(s, a) for all a
+        net_action_values = self.net(states) 
+        # Only choose the actions that were actually taken
+        q_values = net_action_values.gather(1, actions.unsqueeze(1)).squeeze()
+
+        with torch.no_grad():
+            # Compute the same values for the next_states 
+            next_state_q_values = self.net(next_states)
+
+            # Use the eval network to predict the values
+            target_q_values     = self.target_net(next_states)
+
+        # Get the argmax for the next states (as in the formula)
+        _, next_state_action_indices = torch.max(next_state_q_values, dim = 1)
+        
+        # Now use the values from the target_network to get the corresponding q-value
+        max_next_q_preds = target_q_values.gather(-1, next_state_action_indices.unsqueeze(1)).squeeze()
+
+        expected_q_value = rewards + Parameters.gamma * max_next_q_preds * (1 - dones)
+
+        # TO-DO: Replace loss with more easily modifiable function
+        loss = F.smooth_l1_loss(q_values, expected_q_value.data)
+
+        self.optimizer.zero_grad()
+        loss.backward()
+
+        for param in self.net.parameters():
+            param.grad.data.clamp_(-1, 1)
+        self.optimizer.step()
+
+        return loss

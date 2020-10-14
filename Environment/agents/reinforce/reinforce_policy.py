@@ -42,14 +42,14 @@ class Reinforce_Policy(nn.Module):
         # Get the "estimations" from the neural network
         prob_distr_params = self.forward(x)
 
-        for i in range(len(prob_distr_params[0])):
+        for i in range(len(prob_distr_params)):
             if i not in available_actions:
-                prob_distr_params[0][i] = float('-Inf')
+                prob_distr_params[i] = float('-Inf')
         
-        softmax_params = F.softmax(prob_distr_params, dim = 1)
+        softmax_params = F.softmax(prob_distr_params, dim = 0)
 
         # Detach to store. We only take the first element as we only process for a single state
-        output = prob_distr_params.cpu().detach().numpy()[0]
+        output = prob_distr_params.cpu().detach().numpy()
 
         # Store output
         self.history.store_network_output_for_current_episode(output)

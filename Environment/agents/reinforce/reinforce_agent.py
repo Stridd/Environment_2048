@@ -117,10 +117,10 @@ class Reinforce_Agent():
         reward = 0
 
         # Apply preprocessing and other operations
-        state = PreprocessingUtility.transform_board_into_state(data_helper.game_board)
+        state = PreprocessingUtility.transform_board_into_state(self.data_helper.game_board)
 
         # Need available_actions to rule out invalid actions
-        action = self.policy.get_action(state, data_helper.available_actions)
+        action = self.policy.get_action(state, self.data_helper.available_actions)
 
         self.game.takeAction(action)
 
@@ -132,7 +132,7 @@ class Reinforce_Agent():
         self.policy.store_reward(reward)
 
         # Store the game board to check clearly the state of the game
-        self.history.store_state_action_reward_for_current_episode([data_helper.game_board, action, reward])
+        self.history.store_state_action_reward_for_current_episode([self.data_helper.game_board, action, reward])
 
         # Increase the steps taken to see episode length
         self.data_helper.steps += 1

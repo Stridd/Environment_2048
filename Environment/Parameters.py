@@ -10,7 +10,7 @@ class Parameters:
     lr = 0.001
     momentum = 0.9
     
-    episodes = 10
+    episodes = 100
     board_size = 4
     
     input_size = 16
@@ -51,4 +51,5 @@ class Parameters:
     # DDQN ONLY
     max_memory_size = 15000
     epsilon = 0.1
-    batch_size = 128
+    batch_size = 256
+    update_every = 25

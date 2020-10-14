@@ -42,10 +42,8 @@ class History():
     
     def store_state_action_reward_for_current_episode(self, data):
 
-        state = data[0]
-        action = data[1]
-        reward = data[2]    
-
+        state, action, reward = data
+ 
         self.state_evolution_current_episode.append(state)
         self.actions_current_episode.append(action)
         self.rewards_current_episode.append(reward)
