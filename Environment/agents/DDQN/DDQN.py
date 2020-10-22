@@ -8,7 +8,7 @@ from Environment_2048 import Environment_2048
 
 from history            import History
 from data_helper        import Data_Helper
-from logger             import Logger
+from loggers            import Logger
 from plotter            import Plotter
 from utilities          import Utility,RewardUtility,PreprocessingUtility
 from memory.memory      import Memory

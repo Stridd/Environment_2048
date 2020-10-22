@@ -8,41 +8,45 @@ from .reinforce_policy import Reinforce_Policy
 
 from Environment_2048 import Environment_2048
 
-from history     import History
-from data_helper import Data_Helper
-from logger      import Logger
-from utilities   import Utility, RewardUtility, PreprocessingUtility
-from parameters  import Parameters
-from plotter     import Plotter
+from history      import History
+from data_helper  import Data_Helper
+from loggers      import REINFORCELogger as Logger
+from utilities    import Utility, RewardUtility, PreprocessingUtility,OptimizerUtility
+from parameters   import REINFORCEParameters as params
+from plotter      import Plotter
 
 class Reinforce_Agent():
     def __init__(self):
 
-        self.game =  Environment_2048(Parameters.board_size)
+        self.game =  Environment_2048(params.BOARD_SIZE)
      
-        if Parameters.seed is not None:
-            self.set_seed(Parameters.seed)
+        if params.SEED is not None:
+            self.set_seed(params.SEED)
 
         # Also reset the game to take into account the new seed
         self.game.resetGame()
-
+        
         self.time_of_experiment = Utility.get_time_of_experiment()
         
-        self.logger = Logger(self.time_of_experiment)
+        self.logger = Logger(self.time_of_experiment, params)
+
         # Use the logger time of experiment to save figures to corresponding folder
-        self.plotter = Plotter(self.time_of_experiment)
+        self.plotter = Plotter(self.time_of_experiment, params.PLOT_FOLDER_NAME)
         
         self.history = History()
         self.data_helper = Data_Helper()
 
-        self.policy = Reinforce_Policy(self.history).to(Parameters.device)
+        self.policy = Reinforce_Policy(self.history).to(params.DEVICE)
         self.policy.train()
-        self.optimizer = Utility.get_optimizer_for_parameters(self.policy.parameters())
+
+        OptimizerUtility.set_params(params)
+        self.optimizer = OptimizerUtility.get_optimizer_for_parameters(self.policy.parameters())
 
         self.trained_for = 0
+        self.gamma = params.GAMMA
 
-        if Parameters.load_model == True:
-            self.load_model_from(Parameters.model_path)
+        if params.LOAD_MODEL == True:
+            self.load_model_from(params.MODEL_PATH)
 
     def set_seed(self, seed):
         torch.manual_seed(seed)
@@ -61,13 +65,13 @@ class Reinforce_Agent():
         future_returns = 0.0 
 
         for t in reversed(range(episode_length)):
-            future_returns = self.policy.rewards[t] + Parameters.gamma * future_returns
+            future_returns = self.policy.rewards[t] + self.gamma * future_returns
             returns[t] = future_returns
 
         normalized_returns = (returns - np.mean(returns)) / (np.std(returns) + eps)
 
-        normalized_returns = torch.tensor(normalized_returns).to(Parameters.device)
-        log_probabilities = torch.stack(self.policy.log_probablities).flatten().to(Parameters.device)
+        normalized_returns = torch.tensor(normalized_returns).to(params.DEVICE)
+        log_probabilities = torch.stack(self.policy.log_probablities).flatten().to(params.DEVICE)
 
         loss = -log_probabilities * normalized_returns
         # Loss needs to be an item, not an tensor.
@@ -81,13 +85,14 @@ class Reinforce_Agent():
 
     def train(self):
 
-        for episode in range(Parameters.episodes):
+        for episode in range(params.EPISODES):
             self.play_until_end_of_game()
             self.store_and_write_data()
 
             self.clean_up_episode_history()
-        self.logger.save_parameters_to_json()
+        self.logger.save_parameters_to_json(params)
         self.save_model()
+        self.save_obtained_cells(self.history)
 
     def play_until_end_of_game(self):
         
@@ -124,8 +129,7 @@ class Reinforce_Agent():
 
         self.game.takeAction(action)
 
-        reward = RewardUtility.get_reward(self.game.getMergedCellsAfterMove())
-        # Small preprocessing
+        reward = RewardUtility.get_reward(params.REWARD_FUNCTION, self.game.getMergedCellsAfterMove())
         # Store min and max reward for statistics
         self.data_helper.store_min_max_reward(reward)
 
@@ -157,7 +161,7 @@ class Reinforce_Agent():
         self.history.increment_episode()
         self.trained_for += 1
 
-        if self.history.current_episode < Parameters.episodes:
+        if self.history.current_episode < params.EPISODES:
             self.logger.open_new_log_for_current_episode(self.history)
 
         self.policy.reset_policy()
@@ -169,14 +173,17 @@ class Reinforce_Agent():
         
         current_directory = Utility.get_absolute_path_from_file_name(__file__)
 
-        logs_folder = str(Path(current_directory).parents[1]) + '\\' + 'Logs'
-        path = logs_folder + '\\' + self.time_of_experiment + '\\' + 'model.pt'
+        logs_folder = str(Path(current_directory).parents[1]) + '\\' + params.LOG_FOLDER_NAME
+        path = logs_folder + '\\' + self.time_of_experiment   + '\\' + params.MODEL_NAME
 
         torch.save({
             'trained_for'         : self.trained_for,
             'model_state_dict'    : self.policy.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
             }, path)
+
+    def save_obtained_cells(self, agent_history):
+        self.logger.write_obtained_cells(agent_history)
 
     def load_model_from(self, path):
         checkpoint = torch.load(path)

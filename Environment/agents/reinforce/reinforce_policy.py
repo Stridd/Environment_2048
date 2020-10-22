@@ -5,16 +5,19 @@ import numpy as np
 
 from torch.distributions import Categorical
 
-from parameters import Parameters
-from utilities import Utility
+from parameters import REINFORCEParameters as params 
+from utilities import WeightInitUtility
 
 class Reinforce_Policy(nn.Module):
     def __init__(self, history):
         super(Reinforce_Policy, self).__init__()
 
-        self.model = nn.Sequential(*Parameters.layers.copy()).to(Parameters.device) 
+        self.model = nn.Sequential(*params.NN_LAYERS.copy()).to(params.DEVICE) 
 
-        if Parameters.weight_init != None:
+        # Need to set this explicitly so we apply the REINFORCEParameters parameters
+        WeightInitUtility.set_params(params)
+
+        if params.WEIGHT_INIT != None:
             self.initialize_weights()
 
         self.history = history
@@ -23,7 +26,7 @@ class Reinforce_Policy(nn.Module):
         self.train()
 
     def initialize_weights(self):
-        self.model.apply(Utility.get_initialization_function)
+        self.model.apply(WeightInitUtility.get_initialization_function)
 
     def reset_policy(self):
         self.log_probablities = []
@@ -37,7 +40,7 @@ class Reinforce_Policy(nn.Module):
     def get_action(self, state, available_actions):
 
         # Convert the state from numpy to further process
-        x = torch.from_numpy(state.astype(np.float32)).to(Parameters.device)
+        x = torch.from_numpy(state.astype(np.float32)).to(params.DEVICE)
 
         # Get the "estimations" from the neural network
         prob_distr_params = self.forward(x)
@@ -48,15 +51,12 @@ class Reinforce_Policy(nn.Module):
         
         softmax_params = F.softmax(prob_distr_params, dim = 0)
 
-        # Detach to store. We only take the first element as we only process for a single state
+        # Detach to store.
         output = prob_distr_params.cpu().detach().numpy()
 
         # Store output
         self.history.store_network_output_for_current_episode(output)
-
-        # Zero-out the logits for the invalid actions so they won't be selected in the sampling step
         
-
         # Use a categorical distribution since we have 4 actions
         distribution = Categorical(softmax_params)
 

@@ -62,12 +62,12 @@ class TestClass(unittest.TestCase):
 
     def test_cell_distribution(self):
         history = History()
-        history.max_cell       = [128, 16, 4, 8, 32, 64, 2]
-        history.max_cell_count = [4,   2,  2, 2, 2,  6,  2]
+        history.max_cell       = [128, 16, 4, 8,  32, 64, 2, 128, 64, 4]
+        history.max_cell_count = [4,   2,  2, 2,  2,  6,  2, 4,   2,  2]
 
         cell_dictionary = DataUtility.build_and_sort_max_cell_distribution_from_history(history)
 
-        solution = {'2':2, '4':2, '8':2, '16':2, '32':2, '64':6, '128':4}
+        solution = {'2':1, '4':2, '8':1, '16':1, '32':1, '64':2, '128':2}
 
         self.assertEqual(cell_dictionary, solution)
 

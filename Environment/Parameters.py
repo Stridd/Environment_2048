@@ -4,52 +4,121 @@ import torch
 import torch.nn as nn
 
 class Parameters:
-
     # Learning hyperparameters
-    gamma = 0.99
-    lr = 0.001
-    momentum = 0.9
     
-    episodes = 100
-    board_size = 4
+    LR = 0.001
+    MOMENTUM = 0.9
     
-    input_size = 16
-    output_size = 4
-    # 'cpu' or 'cuda'
-    device = torch.device('cpu')
-    #device = 'cpu'
+    EPISODES = 10
+    BOARD_SIZE = 4
 
-    experiment_data_file_name = 'experiment_data.txt'
-    logs_folder_name     = 'Logs'
-    plots_folder_name    = 'Plots'
-    profiles_folder_name = 'Profiles'
+    INPUT_SIZE  = 16
+    OUTPUT_SIZE = 4
 
-    optimizer = Optimizers.ADAM
-    reward_type = RewardFunctions.cells_merged
-    weight_init = WeightInit.XAVIER_UNIFORM
+    EXPERIMENT_FILE             = 'experiment_data.txt'
+    LOG_FOLDER_NAME             = 'logs'
+    PLOT_FOLDER_NAME            = 'plots'
+    PROFILE_FOLDER_NAME         = 'profiles'
+    PARAMETERS_FILE             = 'parameters.json'
+    OBTAINED_CELLS_FILE         = 'obtained_cells.json'
+    MODEL_NAME                  = 'model.pt'
 
-    seed = None
+    OPTIMIZER       = Optimizers.ADAM
+    REWARD_FUNCTION = RewardFunctions.cells_merged
+    WEIGHT_INIT     = WeightInit.XAVIER_UNIFORM
+
+    SEED = None
 
     # Must set manual seed before layer initialization
-    if seed is not None:
-        torch.manual_seed(seed)
+    if SEED is not None:
+        torch.manual_seed(SEED)
 
-    layers = \
+    NN_LAYERS = None
+
+    PROFILE    = False 
+    LOAD_MODEL = False
+    MODEL_PATH = None
+    #load_model = False 
+    #model_path = r'D:\Projects\1. Environment_2048\Environment\Logs\16-09-2020_06-51-30\model.pt'
+
+    def get_constants_as_json():
+        json_content = {}
+        json_content['episodes']              = Parameters.EPISODES
+        json_content['learning rate']         = Parameters.LR
+        json_content['momentum']              = Parameters.MOMENTUM
+        json_content['board_size']            = Parameters.BOARD_SIZE
+        json_content['input_size']            = Parameters.INPUT_SIZE
+        json_content['output_size']           = Parameters.OUTPUT_SIZE
+        json_content['optimizer']             = str(Optimizers(Parameters.OPTIMIZER).name)
+        json_content['reward function']       = str(RewardFunctions(Parameters.REWARD_FUNCTION).name)
+        json_content['weight initialization'] = str(WeightInit(Parameters.WEIGHT_INIT).name)
+        json_content['seed']                  = 'None' if Parameters.SEED == None else Parameters.SEED
+        return json_content
+
+class REINFORCEParameters():
+
+    LR                          = Parameters.LR
+    MOMENTUM                    = Parameters.MOMENTUM
+    
+    EPISODES                    = Parameters.EPISODES
+    BOARD_SIZE                  = Parameters.BOARD_SIZE
+
+    INPUT_SIZE                  = Parameters.INPUT_SIZE
+    OUTPUT_SIZE                 = Parameters.OUTPUT_SIZE
+
+    EXPERIMENT_FILE             = Parameters.EXPERIMENT_FILE
+    LOG_FOLDER_NAME             = Parameters.LOG_FOLDER_NAME
+    PLOT_FOLDER_NAME            = Parameters.PLOT_FOLDER_NAME
+    PROFILE_FOLDER_NAME         = Parameters.PROFILE_FOLDER_NAME
+    PARAMETERS_FILE             = Parameters.PARAMETERS_FILE
+    OBTAINED_CELLS_FILE         = Parameters.OBTAINED_CELLS_FILE
+    MODEL_NAME                  = Parameters.MODEL_NAME
+
+    OPTIMIZER                   = Parameters.OPTIMIZER
+    REWARD_FUNCTION             = Parameters.REWARD_FUNCTION
+    WEIGHT_INIT                 = Parameters.WEIGHT_INIT
+    LOAD_MODEL                  = Parameters.LOAD_MODEL
+    MODEL_PATH                  = Parameters.MODEL_PATH
+
+    SEED = Parameters.SEED
+
+    # Must set manual seed before layer initialization
+    if SEED is not None:
+        torch.manual_seed(SEED)
+
+    GAMMA = 0.99
+    DEVICE = torch.device('cpu')
+
+    NN_LAYERS = \
     [
-        nn.Linear(input_size, 256),
+        nn.Linear(INPUT_SIZE, 256),
         nn.ReLU(),
         nn.Linear(256, 128),
         nn.ReLU(),
-        nn.Linear(128, output_size)
+        nn.Linear(128, OUTPUT_SIZE)
     ]
 
-    load_model = False 
-    model_path = r'D:\Projects\1. Environment_2048\Environment\Logs\16-09-2020_06-51-30\model.pt'
+    def get_constants_as_json():
 
-    profile = False
+        json_content = Parameters.get_constants_as_json()
+        json_content['gamma']   = REINFORCEParameters.GAMMA
+        json_content['model']   = repr(REINFORCEParameters.NN_LAYERS)
+        return json_content
 
+class DDQNParameters():
     # DDQN ONLY
-    max_memory_size = 15000
-    epsilon = 0.1
-    batch_size = 256
-    update_every = 25
+    GAMMA                 = 0.99
+    MEMORY_SIZE           = 15000
+    EPSILON               = 0.1
+    BATCH_SIZE            = 256
+    UPDATE_FREQUENCY      = 25
+    DEVICE                = torch.device('cuda')
+
+    def get_constants_as_json():
+        json_content = Parameters.get_constants_as_json()
+        json_content['gamma']                     = DDQNParameters.GAMMA
+        json_content['model']                     = repr(DDQNParameters.LAYERS)
+        json_content['memory_size']               = DDQNParameters.MEMORY_SIZE
+        json_content['batch_size']                = DDQNParameters.BATCH_SIZE
+        json_content['update_frequency']          = DDQNParameters.UPDATE_FREQUENCY
+        return json_content
