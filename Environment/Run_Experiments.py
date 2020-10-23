@@ -1,7 +1,7 @@
 from timeit import default_timer as timer
 
 from agents.reinforce.reinforce_agent import Reinforce_Agent
-#from agents.DDQN.DDQN import DDQN
+from agents.DDQN.DDQN import DDQN
 from utilities import Utility
 
 
@@ -32,9 +32,5 @@ def create_and_train_DDQN_agent():
     pretty_print_time(end-start)
 
 if __name__ == '__main__':
-    create_and_train_reinforce_agent()
-    #create_and_train_DDQN_agent()
-    #np.set_printoptions(suppress=True)
-    #with open(,'r') as f:
-    #text = np.loadtxt(r'D:\Projects\1. Environment_2048\Environment\logs\20-10-2020_06-35-18\experiment_data.txt',delimiter=',', dtype = np.float32)
-    #print(text)
+    #create_and_train_reinforce_agent()
+    create_and_train_DDQN_agent()

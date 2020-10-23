@@ -2,10 +2,10 @@ from parameters import Parameters
 import numpy as np 
 
 class Memory():
-    def __init__(self):
+    def __init__(self, max_size):
         
         self.next_slot = 0
-        self.max_size = Parameters.max_memory_size
+        self.max_size = max_size
 
         self.experiences = []
 

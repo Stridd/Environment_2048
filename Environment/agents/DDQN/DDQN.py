@@ -1,48 +1,63 @@
 import numpy as np
 import torch
 import torch.nn.functional as F
+import random
 
 from .networks import Network, TargetNetwork
 
 from Environment_2048 import Environment_2048
 
-from history            import History
+from history            import DQNHistory as History
 from data_helper        import Data_Helper
-from loggers            import Logger
+from loggers            import DQNLogger
 from plotter            import Plotter
-from utilities          import Utility,RewardUtility,PreprocessingUtility
+from utilities          import Utility,RewardUtility,PreprocessingUtility,OptimizerUtility
 from memory.memory      import Memory
-from parameters         import Parameters
-
+from parameters         import DDQNParameters as PARAM
 
 class DDQN():
     def __init__(self):
 
-        self.net           = Network().to(Parameters.device)
-        self.target_net    = TargetNetwork().to(Parameters.device)
+        self.net           = Network().to(PARAM.DEVICE)
+        self.target_net    = TargetNetwork().to(PARAM.DEVICE)
 
-        self.replay_memory = Memory()
-        self.epsilon       = Parameters.epsilon
-        self.game          = Environment_2048(Parameters.board_size)
+        self.replay_memory = Memory(PARAM.MEMORY_SIZE)
+        self.epsilon       = PARAM.EPSILON
+
+        self.game          = Environment_2048(PARAM.BOARD_SIZE)
+
+        if PARAM.SEED is not None:
+            self.set_seed(PARAM.SEED)
 
         self.game.resetGame()
 
         self.time_of_experiment = Utility.get_time_of_experiment()
-        
-        #self.logger = Logger(self.time_of_experiment)
+        self.gamma              = PARAM.GAMMA
+
+        self.logger = DQNLogger(self.time_of_experiment, PARAM)
         #self.plotter = Plotter(self.time_of_experiment)
         
-        #self.history = History()
-        #self.data_helper = Data_Helper()
+        self.history = History()
+        self.data_helper = Data_Helper()
 
-        self.optimizer = Utility.get_optimizer_for_parameters(self.net.parameters())
+        OptimizerUtility.set_params(PARAM)
+        self.optimizer = OptimizerUtility.get_optimizer_for_parameters(self.net.parameters())
+
+    def set_seed(self, seed):
+        torch.manual_seed(seed)
+        random.seed(seed)
+        np.random.seed(seed)
+        self.game.setSeed(seed)
 
     def train(self):
 
-        for episode in range(Parameters.episodes):
+        for episode in range(PARAM.EPISODES):
             print('Processing episode: {}'.format(episode))
             self.play_until_end_of_game()
-            if episode % Parameters.update_every == 0:
+            self.write_data()
+            self.clean_up_episode_history()
+
+            if episode % PARAM.UPDATE_FREQUENCY == 0:
                 self.target_net.load_state_dict(self.net.state_dict())
 
     def play_until_end_of_game(self):
@@ -61,18 +76,16 @@ class DDQN():
             if available_actions == None:
                 available_actions = self.game.getAvailableMoves(game_board, len(game_board))
 
-            #self.data_helper.game_board        = game_board
-            #self.data_helper.available_actions = available_actions
-
             state = PreprocessingUtility.transform_board_into_state(game_board)
 
             action = self.get_action(state, available_actions)
 
             self.game.takeAction(action)
 
-            reward = RewardUtility.get_reward(self.game.getMergedCellsAfterMove()) 
+            reward = RewardUtility.get_reward(PARAM.REWARD_FUNCTION, self.game.getMergedCellsAfterMove()) 
 
-            #self.data_helper.store_min_max_reward(reward)
+            self.history.store_state_action_reward_for_current_episode((game_board, action, reward))
+            self.data_helper.store_min_max_reward(reward)
 
             next_game_board = self.game.getBoard()
             next_state = PreprocessingUtility.transform_board_into_state(next_game_board)
@@ -86,14 +99,13 @@ class DDQN():
 
             self.replay_memory.store_experience( (state,action,reward,next_state,game_is_done) ) 
 
-            self.learn()
-            #self.history.store_state_action_reward_for_current_episode([data_helper.game_board, action, reward])
-            #self.data_helper.steps += 1
+            loss = self.learn()
 
-            #self.perform_action_and_store_data(self.data_helper)
+            self.history.store_loss(loss)
 
-            #game_is_done = self.game.isFinished()
-
+            self.data_helper.steps += 1
+        
+        self.store_data_in_history()
 
     def get_action(self, state, available_actions):
         # Sample a random
@@ -103,9 +115,11 @@ class DDQN():
 
         if sample < self.epsilon:
             action = np.random.choice(available_actions)
+            self.history.store_action_type('exploration')
+            self.history.store_net_q_values([np.float32('-Inf') for i in range(4)])
         else:
- 
-            state = torch.tensor(state, device = Parameters.device)
+            self.history.store_action_type('exploitation')
+            state = torch.tensor(state, device = PARAM.DEVICE)
 
             # Set all actions as invalid (with return -Inf)
             q_values = np.ones(shape = (4,), dtype = np.float32) * np.float32('-Inf')
@@ -114,6 +128,8 @@ class DDQN():
 
             # Correct the values for the available actions
             predicted_q_values = predicted_values.cpu().detach()
+
+            self.history.store_net_q_values(predicted_q_values.numpy())
 
             q_values[available_actions] = predicted_q_values[available_actions]
 
@@ -124,21 +140,20 @@ class DDQN():
 
     def learn(self):
 
-        if self.replay_memory.get_size() < Parameters.batch_size:
+        if self.replay_memory.get_size() < PARAM.BATCH_SIZE:
             return 
 
-        experiences = self.replay_memory.sample_experiences(Parameters.batch_size)
+        experiences = self.replay_memory.sample_experiences(PARAM.BATCH_SIZE)
 
         # Unpack the tuple into each separate list
         states, actions, rewards, next_states, dones = zip(*experiences)
 
         # Squeeze because at the moment we have (X,1,16)
-        states      = torch.tensor(states,       device = Parameters.device, dtype = torch.float32)
-        actions     = torch.tensor(actions,      device = Parameters.device, dtype = torch.long)
-        rewards     = torch.tensor(rewards,      device = Parameters.device, dtype = torch.float32)
-        next_states = torch.tensor(next_states,  device = Parameters.device, dtype = torch.float32)
-        dones       = torch.tensor(dones,        device = Parameters.device, dtype = torch.float32)
-
+        states      = torch.tensor(states,       device = PARAM.DEVICE, dtype = torch.float32)
+        actions     = torch.tensor(actions,      device = PARAM.DEVICE, dtype = torch.long)
+        rewards     = torch.tensor(rewards,      device = PARAM.DEVICE, dtype = torch.float32)
+        next_states = torch.tensor(next_states,  device = PARAM.DEVICE, dtype = torch.float32)
+        dones       = torch.tensor(dones,        device = PARAM.DEVICE, dtype = torch.float32)
 
         # Predict the action values for the Q(s, a) for all a
         net_action_values = self.net(states) 
@@ -158,7 +173,7 @@ class DDQN():
         # Now use the values from the target_network to get the corresponding q-value
         max_next_q_preds = target_q_values.gather(-1, next_state_action_indices.unsqueeze(1)).squeeze()
 
-        expected_q_value = rewards + Parameters.gamma * max_next_q_preds * (1 - dones)
+        expected_q_value = rewards + self.gamma * max_next_q_preds * (1 - dones)
 
         # TO-DO: Replace loss with more easily modifiable function
         loss = F.smooth_l1_loss(q_values, expected_q_value.data)
@@ -171,3 +186,29 @@ class DDQN():
         self.optimizer.step()
 
         return loss
+
+    def store_data_in_history(self):
+        self.data_helper.game_board = self.game.getBoard()
+        self.data_helper.store_max_cell_statistics()
+
+        self.history.store_episode_length(self.data_helper.steps)
+        self.history.store_total_reward(self.history.rewards_current_episode)
+        self.history.store_average_reward(self.history.rewards_current_episode)
+        self.history.store_max_cell(self.data_helper.max_cell)
+        self.history.store_max_cell_count(self.data_helper.max_cell_count)
+        self.history.store_min_reward(self.data_helper.min_reward)
+        self.history.store_max_reward(self.data_helper.max_reward)
+
+    def write_data(self):
+        self.logger.write_data_for_current_episode_using_history(self.history)
+        self.logger.write_experiment_info_using_history(self.history)
+
+        self.logger.close_log_for_current_episode()
+
+        self.history.increment_episode()
+        if self.history.current_episode < PARAM.EPISODES:
+            self.logger.open_new_log_for_current_episode(self.history)
+
+    def clean_up_episode_history(self):
+        self.history.clear_current_episode_data()
+        self.data_helper.clear_current_data()

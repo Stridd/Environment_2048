@@ -87,9 +87,13 @@ class Reinforce_Agent():
 
         for episode in range(params.EPISODES):
             self.play_until_end_of_game()
-            self.store_and_write_data()
+            
+            # Keep this assignment here to increase clarity(PLAY GAME -> LEARN -> STORE DATA)
+            self.data_helper.loss = self.learn()
 
+            self.store_and_write_data()
             self.clean_up_episode_history()
+
         self.logger.save_parameters_to_json(params)
         self.save_model()
         self.save_obtained_cells(self.history)
@@ -142,7 +146,6 @@ class Reinforce_Agent():
         self.data_helper.steps += 1
     
     def store_and_write_data(self):
-        self.data_helper.loss = self.learn()
         self.data_helper.game_board = self.game.getBoard()
         self.data_helper.total_reward = np.sum(self.policy.rewards)
 

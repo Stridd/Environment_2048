@@ -70,3 +70,40 @@ class History():
         self.store_max_reward(data.max_reward)
         self.store_max_cell(data.max_cell)
         self.store_max_cell_count(data.max_cell_count)
+
+class DQNHistory(History):
+    def __init__(self):
+        super().__init__()
+
+        self.average_rewards = []
+
+    def clear_current_episode_data(self):
+        self.state_evolution_current_episode           = []
+        self.rewards_current_episode                   = []
+        self.actions_current_episode                   = []
+
+        self.network_outputs                           = []
+        self.losses                                    = []
+        # Can be either explore or exploit
+        self.action_type                               = []
+
+    def add_data_helper_info(self, data):
+        self.store_episode_length(data.steps)
+        self.store_min_reward(data.min_reward)
+        self.store_max_reward(data.max_reward)
+        self.store_max_cell(data.max_cell)
+        self.store_max_cell_count(data.max_cell_count)
+        self.store_total_reward(data.rewards)
+        self.store_average_reward(data.rewards)
+    
+    def store_total_reward(self, rewards):
+        self.episode_rewards.append(sum(rewards))
+
+    def store_average_reward(self, rewards):
+        self.average_rewards.append(sum(rewards) / len(rewards))
+
+    def store_net_q_values(self, q_values):
+        self.network_outputs.append(q_values)
+
+    def store_action_type(self, action_type):
+        self.action_type.append(action_type)

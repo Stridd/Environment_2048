@@ -1,4 +1,4 @@
-from parameters import Parameters
+from parameters import DDQNParameters as PARAM
 
 import torch
 import torch.nn as nn
@@ -7,8 +7,7 @@ class Network(nn.Module):
 
     def __init__(self):
         super(Network, self).__init__()
-        self.model = nn.Sequential(*Parameters.layers.copy())
-        # Set eval 
+        self.model = nn.Sequential(*PARAM.NN_LAYERS.copy())
         self.model.train()
 
     def forward(self, x):
@@ -18,7 +17,7 @@ class Network(nn.Module):
 class TargetNetwork(nn.Module):
     def __init__(self):
         super(TargetNetwork, self).__init__()
-        self.model = nn.Sequential(*Parameters.layers.copy())
+        self.model = nn.Sequential(*PARAM.NN_LAYERS.copy())
         self.model.eval()
 
     def forward(self, x):
