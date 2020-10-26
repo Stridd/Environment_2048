@@ -203,20 +203,20 @@ class DQNLogger(Logger):
     def build_experiment_info_format(self):
         self.experiment_info_format = '|{0:^11}|'
         self.experiment_info_format += '{1:^16}|'
-        self.experiment_info_format += '{2:^14}|'
+        self.experiment_info_format += '{2:^14.2f}|'
         self.experiment_info_format += '{3:^16.2f}|'
-        self.experiment_info_format += '{4:^12}|'
-        self.experiment_info_format += '{5:^14}|'
+        self.experiment_info_format += '{4:^12.2f}|'
+        self.experiment_info_format += '{5:^14.2f}|'
         self.experiment_info_format += '{6:^10}|'
         self.experiment_info_format += '{7:^10}|'
 
     def build_data_per_episode_format(self):
-        self.data_per_episode_format = '|{0:^80}|{1:^10}|{2:^14}|{3:^14}|{4:^40}|{5:^14}|'
+        self.data_per_episode_format = '|{0:^80}|{1:^10}|{2:^14.2f}|{3:^14}|{4:^50}|{5:^16.2f}|'
 
     def write_headers_for_current_log(self):
         # Also write the headers. Cannot use data_per_episode_format because it has a float value
         headers = ['state','action','reward','action_type','network_output','loss']
-        headers_format = '|{0:^80}|{1:^10}|{2:^14}|{3:^14}|{4:^40}|{5:^14}|'
+        headers_format = '|{0:^80}|{1:^10}|{2:^14}|{3:^14}|{4:^50}|{5:^16}|'
         
         self.log_for_current_episode.write(headers_format.format(*headers))
         self.log_for_current_episode.write('\n')
@@ -285,7 +285,7 @@ class DQNLogger(Logger):
                                             rewards_current_episode[i],
                                             action_type[i],
                                             str(['%.3f' % output for output in network_output[i]]), 
-                                            str(loss[i])
+                                            loss[i]
                                             )
             self.log_for_current_episode.write(text)
             self.log_for_current_episode.write('\n')

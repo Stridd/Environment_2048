@@ -1,4 +1,3 @@
-from parameters import Parameters
 import numpy as np 
 
 class Memory():
@@ -22,7 +21,7 @@ class Memory():
         self.next_slot = (self.next_slot + 1) % self.max_size
 
     def sample_experiences(self, batch_size):
-        indexes = np.random.choice(self.next_slot, size = batch_size, replace = False)
+        indexes = np.random.choice(len(self.experiences), size = batch_size, replace = False)
 
         experiences = [self.experiences[index] for index in indexes]
 

@@ -108,3 +108,14 @@ class Plotter():
         plt.title(title)
         plt.savefig(self.folder_for_plots + '\\' + file_name, bbox_inches='tight')
         plt.close()
+
+class DQNPlotter(Plotter):
+    def __init__(self, time_of_experiment, plots_folder_name):
+        super().__init__(time_of_experiment, plots_folder_name)
+    
+    def generate_and_save_plots_from_history(self, history):
+        self.plot_ma_of_reward_from_history(history)
+        self.plot_ma_of_episode_length_from_history(history)
+        #self.plot_ma_of_loss_from_history(history)
+        self.plot_ma_of_max_cell_from_history(history)
+        self.plot_max_cell_distribution_from_history(history)

@@ -28,8 +28,10 @@ def create_and_train_DDQN_agent():
     agent = DDQN()
     start = timer()
     agent.train()
+    #agent.train()
     end = timer()
     pretty_print_time(end-start)
+    agent.plot_statistics_to_files()
 
 if __name__ == '__main__':
     #create_and_train_reinforce_agent()

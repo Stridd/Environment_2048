@@ -3,14 +3,15 @@ import torch
 import torch.nn.functional as F
 import random
 
-from .networks import Network, TargetNetwork
 
+from .networks import Network, TargetNetwork
+from pathlib import Path
 from Environment_2048 import Environment_2048
 
 from history            import DQNHistory as History
 from data_helper        import Data_Helper
 from loggers            import DQNLogger
-from plotter            import Plotter
+from plotter            import DQNPlotter
 from utilities          import Utility,RewardUtility,PreprocessingUtility,OptimizerUtility
 from memory.memory      import Memory
 from parameters         import DDQNParameters as PARAM
@@ -35,13 +36,16 @@ class DDQN():
         self.gamma              = PARAM.GAMMA
 
         self.logger = DQNLogger(self.time_of_experiment, PARAM)
-        #self.plotter = Plotter(self.time_of_experiment)
+        self.plotter = DQNPlotter(self.time_of_experiment,PARAM.PLOT_FOLDER_NAME)
         
         self.history = History()
         self.data_helper = Data_Helper()
 
         OptimizerUtility.set_params(PARAM)
         self.optimizer = OptimizerUtility.get_optimizer_for_parameters(self.net.parameters())
+
+        self.trained_for = 0
+        self.max_cell_achieved = -1
 
     def set_seed(self, seed):
         torch.manual_seed(seed)
@@ -59,6 +63,12 @@ class DDQN():
 
             if episode % PARAM.UPDATE_FREQUENCY == 0:
                 self.target_net.load_state_dict(self.net.state_dict())
+
+            self.trained_for += 1
+        
+        self.logger.save_parameters_to_json(PARAM)
+        self.save_model()
+        self.save_obtained_cells(self.history)
 
     def play_until_end_of_game(self):
         game_is_done = False
@@ -83,6 +93,8 @@ class DDQN():
             self.game.takeAction(action)
 
             reward = RewardUtility.get_reward(PARAM.REWARD_FUNCTION, self.game.getMergedCellsAfterMove()) 
+            # See here for formula: https://stackoverflow.com/questions/929103/convert-a-number-range-to-another-range-maintaining-ratio
+            reward = (((reward - 0) * (1 - (-1))) / (512 - 0)) + -1
 
             self.history.store_state_action_reward_for_current_episode((game_board, action, reward))
             self.data_helper.store_min_max_reward(reward)
@@ -100,6 +112,7 @@ class DDQN():
             self.replay_memory.store_experience( (state,action,reward,next_state,game_is_done) ) 
 
             loss = self.learn()
+            loss = loss.item() if loss is not None else 'None'
 
             self.history.store_loss(loss)
 
@@ -141,7 +154,7 @@ class DDQN():
     def learn(self):
 
         if self.replay_memory.get_size() < PARAM.BATCH_SIZE:
-            return 
+            return np.float32('-Inf')
 
         experiences = self.replay_memory.sample_experiences(PARAM.BATCH_SIZE)
 
@@ -212,3 +225,23 @@ class DDQN():
     def clean_up_episode_history(self):
         self.history.clear_current_episode_data()
         self.data_helper.clear_current_data()
+
+    def save_model(self):
+        
+        current_directory = Utility.get_absolute_path_from_file_name(__file__)
+
+        logs_folder = str(Path(current_directory).parents[1]) + '\\' + PARAM.LOG_FOLDER_NAME
+        path = logs_folder + '\\' + self.time_of_experiment   + '\\' + PARAM.MODEL_NAME
+
+        torch.save({
+            'trained_for'            : self.trained_for,
+            'q_values_net_dict'      : self.net.model.state_dict(),
+            'target_net_dict'        : self.target_net.model.state_dict(),
+            'optimizer_state_dict'   : self.optimizer.state_dict(),
+            }, path)
+
+    def save_obtained_cells(self, agent_history):
+        self.logger.write_obtained_cells(agent_history)
+
+    def plot_statistics_to_files(self):
+        self.plotter.generate_and_save_plots_from_history(self.history)
