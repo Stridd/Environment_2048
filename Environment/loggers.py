@@ -211,12 +211,12 @@ class DQNLogger(Logger):
         self.experiment_info_format += '{7:^10}|'
 
     def build_data_per_episode_format(self):
-        self.data_per_episode_format = '|{0:^80}|{1:^10}|{2:^14.2f}|{3:^14}|{4:^50}|{5:^16.2f}|'
+        self.data_per_episode_format = '|{0:^80}|{1:^10}|{2:^14.2f}|{3:^14}|{4:^50}|{5:^16.2f}|{6:^18.4f}|'
 
     def write_headers_for_current_log(self):
         # Also write the headers. Cannot use data_per_episode_format because it has a float value
-        headers = ['state','action','reward','action_type','network_output','loss']
-        headers_format = '|{0:^80}|{1:^10}|{2:^14}|{3:^14}|{4:^50}|{5:^16}|'
+        headers = ['state','action','reward','action_type','network_output','loss','exploration_rate']
+        headers_format = '|{0:^80}|{1:^10}|{2:^14}|{3:^14}|{4:^50}|{5:^16}|{6:^18}|'
         
         self.log_for_current_episode.write(headers_format.format(*headers))
         self.log_for_current_episode.write('\n')
@@ -275,7 +275,8 @@ class DQNLogger(Logger):
         network_output                          = agent_history.network_outputs
         action_type                             = agent_history.action_type
         loss                                    = agent_history.losses
- 
+        exploration_rate                        = agent_history.exploration_rate
+
         network_output = np.array(network_output)
 
         for i in range(len(loss)):
@@ -285,7 +286,8 @@ class DQNLogger(Logger):
                                             rewards_current_episode[i],
                                             action_type[i],
                                             str(['%.3f' % output for output in network_output[i]]), 
-                                            loss[i]
+                                            loss[i],
+                                            exploration_rate[i]
                                             )
             self.log_for_current_episode.write(text)
             self.log_for_current_episode.write('\n')

@@ -8,8 +8,9 @@ import numpy as np
 import cProfile, pstats, io
 import torch.optim as optim
 import torch
+import torch.nn.functional as F
 
-from enums import WeightInit, Optimizers,RewardFunctions
+from enums import WeightInit, Optimizers,RewardFunctions,LossFunctions
 
 class Utility(ABC):
 
@@ -287,3 +288,18 @@ class WeightInitUtility(ABC):
             weight_init_function = weight_init_map[WeightInitUtility.PARAMS.WEIGHT_INIT]
             weight_init_function(nn_layer.weight)
             nn_layer.bias.data.fill_(0.01)
+
+class LossFunctionUtility(ABC):
+    def get_loss_map():
+        loss_map = {}
+        loss_map[LossFunctions.L1]    =  F.l1_loss
+        loss_map[LossFunctions.MSE]   =  F.mse_loss
+        loss_map[LossFunctions.HUBER] =  F.smooth_l1_loss
+        return loss_map
+
+    def get_loss_function(params):
+        loss_map = LossFunctionUtility.get_loss_map()
+        loss_function = loss_map[params.LOSS_FUNCTION]
+
+        del loss_map
+        return loss_function

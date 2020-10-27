@@ -86,6 +86,7 @@ class DQNHistory(History):
         self.losses                                    = []
         # Can be either explore or exploit
         self.action_type                               = []
+        self.exploration_rate                          = []
 
     def add_data_helper_info(self, data):
         self.store_episode_length(data.steps)
@@ -107,3 +108,6 @@ class DQNHistory(History):
 
     def store_action_type(self, action_type):
         self.action_type.append(action_type)
+
+    def store_exploration_rate(self, epsilon):
+        self.exploration_rate.append(epsilon)

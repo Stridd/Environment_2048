@@ -1,8 +1,7 @@
 import numpy as np
 import torch
-import torch.nn.functional as F
 import random
-
+import math
 
 from .networks import Network, TargetNetwork
 from pathlib import Path
@@ -12,9 +11,10 @@ from history            import DQNHistory as History
 from data_helper        import Data_Helper
 from loggers            import DQNLogger
 from plotter            import DQNPlotter
-from utilities          import Utility,RewardUtility,PreprocessingUtility,OptimizerUtility
+from utilities          import *
 from memory.memory      import Memory
 from parameters         import DDQNParameters as PARAM
+from enums              import Update
 
 class DDQN():
     def __init__(self):
@@ -45,13 +45,34 @@ class DDQN():
         self.optimizer = OptimizerUtility.get_optimizer_for_parameters(self.net.parameters())
 
         self.trained_for = 0
-        self.max_cell_achieved = -1
+        self.loss_function = LossFunctionUtility.get_loss_function(PARAM)
+
+        self.update_target_net = self.get_update_function_from_params(PARAM)
+
+        # Needed for epsilon decay
+        self.steps_taken = 0
 
     def set_seed(self, seed):
         torch.manual_seed(seed)
         random.seed(seed)
         np.random.seed(seed)
         self.game.setSeed(seed)
+
+    def get_update_function_from_params(self, params):
+        update_function = self.normal_update
+        if params.UPDATE == Update.POLYAK: 
+            update_function = self.polyak_update
+
+        return update_function
+
+    def normal_update(self):
+        self.target_net.load_state_dict(self.net.state_dict())
+
+    def polyak_update(self):
+        # Source: https://discuss.pytorch.org/t/copying-weights-from-one-net-to-another/1492/15
+
+        for target_param, param in zip(self.target_net.parameters(), self.net.parameters()):
+            target_param.data.copy_(PARAM.POLYAK_FACTOR*param.data + target_param.data*(1.0 - PARAM.POLYAK_FACTOR))
 
     def train(self):
 
@@ -62,7 +83,7 @@ class DDQN():
             self.clean_up_episode_history()
 
             if episode % PARAM.UPDATE_FREQUENCY == 0:
-                self.target_net.load_state_dict(self.net.state_dict())
+                self.update_target_net()
 
             self.trained_for += 1
         
@@ -94,7 +115,7 @@ class DDQN():
 
             reward = RewardUtility.get_reward(PARAM.REWARD_FUNCTION, self.game.getMergedCellsAfterMove()) 
             # See here for formula: https://stackoverflow.com/questions/929103/convert-a-number-range-to-another-range-maintaining-ratio
-            reward = (((reward - 0) * (1 - (-1))) / (512 - 0)) + -1
+            #reward = (((reward - 0) * (1 - (-1))) / (512 - 0)) + -1
 
             self.history.store_state_action_reward_for_current_episode((game_board, action, reward))
             self.data_helper.store_min_max_reward(reward)
@@ -126,6 +147,9 @@ class DDQN():
         sample = np.random.random()
         action = None
 
+        exploration_rate = PARAM.EPSILON_END + (PARAM.EPSILON_START - PARAM.EPSILON_END) * \
+                          math.exp(-1. * self.steps_taken / PARAM.EPSILON_DECAY)
+        self.history.store_exploration_rate(exploration_rate)
         if sample < self.epsilon:
             action = np.random.choice(available_actions)
             self.history.store_action_type('exploration')
@@ -149,6 +173,7 @@ class DDQN():
             # See link here: https://stackoverflow.com/questions/42071597/numpy-argmax-random-tie-breaking
             action = np.random.choice(np.where(q_values == q_values.max())[0])
         
+        self.steps_taken += 1
         return action
 
     def learn(self):
@@ -189,7 +214,7 @@ class DDQN():
         expected_q_value = rewards + self.gamma * max_next_q_preds * (1 - dones)
 
         # TO-DO: Replace loss with more easily modifiable function
-        loss = F.smooth_l1_loss(q_values, expected_q_value.data)
+        loss = self.loss_function(q_values, expected_q_value.data)
 
         self.optimizer.zero_grad()
         loss.backward()

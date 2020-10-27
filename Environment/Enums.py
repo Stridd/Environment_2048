@@ -21,4 +21,11 @@ class WeightInit(enum.Enum):
     KAIMING_UNIFORM = 5
     KAIMING_NORMAL  = 6
 	
-	
+class LossFunctions(enum.Enum):
+    L1    = 0
+    MSE   = 1
+    HUBER = 2
+
+class Update(enum.Enum):
+    NORMAL = 0
+    POLYAK = 1
