@@ -1,7 +1,6 @@
 #include "Game_2048.h"
 #include <iostream>
 
-
 Game_2048::Game_2048()
 {
 	this->boardSize = 0;
@@ -63,11 +62,11 @@ bool Game_2048::canBeMergedAtPositions(const int& row,
 									   const int& column, 
 									   const int& afterMoveRow, 
 									   const int& afterMoveColumn,
-									   std::vector< std::vector<bool> >& cellWasCombined)
+									   boardType& cellWasCombined)
 {
 	return board[row][column] == board[afterMoveRow][afterMoveColumn] &&
-		!cellWasCombined[row][column] &&
-		!cellWasCombined[afterMoveRow][afterMoveColumn];
+		cellWasCombined[row][column] == CELL_NOT_MERGED &&
+		cellWasCombined[afterMoveRow][afterMoveColumn] == CELL_NOT_MERGED;
 }
 
 
@@ -88,6 +87,7 @@ std::vector<int> Game_2048::getAvailableMoves(const boardType& board,
 {
 	std::set<int> availableMoves;
 	bool stopSearching = false;
+
 	for(int i = 0; i < boardSize && stopSearching == false; ++i)
 		for (int j = 0; j < boardSize && stopSearching == false; ++j)
 		{
@@ -192,7 +192,7 @@ void Game_2048::assignValueToRandomEmptyCell(emptyPositionsVector& emptyTiles)
 
 void Game_2048::move(const int& yDirection, const int& xDirection)
 {
-	std::vector< std::vector<bool> > cellWasCombined(boardSize, std::vector<bool>(boardSize, false));
+	boardType cellWasCombined(boardSize, std::vector<int>(boardSize, CELL_NOT_MERGED));
 
 	int startColumn, endColumn, stopColumn, stepColumn;
 	int startRow, endRow, stopRow, stepRow;
@@ -220,7 +220,7 @@ void Game_2048::move(const int& yDirection, const int& xDirection)
 					board[afterMoveRow][afterMoveColumn] *= 2;
 					board[row][column] = 0;
 
-					cellWasCombined[afterMoveRow][afterMoveColumn] = true;
+					cellWasCombined[afterMoveRow][afterMoveColumn] = CELL_MERGED;
 					
 				}
 				else

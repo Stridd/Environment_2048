@@ -5,9 +5,9 @@
 #include <tuple>
 #include <unordered_map>
 
-using fromToStopStep = std::tuple<int, int, int, int>;
-using boardType = std::vector<std::vector<int> >;
-using emptyPositionsVector = std::vector<std::pair<int, int>>;
+using fromToStopStep		= std::tuple<int, int, int, int>;
+using boardType				= std::vector<std::vector<int> >;
+using emptyPositionsVector	= std::vector<std::pair<int, int>>;
 
 class Game_2048
 {
@@ -33,10 +33,13 @@ class Game_2048
 		void move(const int& , const int& );
 		void resetBoard();
 
-		bool canBeMergedAtPositions(const int&, const int&, const int&, const int&, std::vector< std::vector<bool> >&);
+		bool canBeMergedAtPositions(const int&, const int&, const int&, const int&, std::vector< std::vector<int> >&);
 		
 		void storeMergedCellsInformation(int& value);
 		void emptyMergedCellsInformation();
+
+		static const int CELL_MERGED	 = 1;
+		static const int CELL_NOT_MERGED = 0;
 
 	public:
 
